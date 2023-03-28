@@ -1,10 +1,10 @@
 /**********************************
-* node_helper for EXT-Screen v1.1 *
+* node_helper for EXT-Screen v1.3 *
 * BuGsounet ©03/22                *
 **********************************/
 
 const NodeHelper = require('node_helper')
-const LibScreen = require("./lib/screenLib.js")
+const LibScreen = require("./components/screenLib.js")
 var log = (...args) => { /* do nothing */ }
 
 module.exports = NodeHelper.create({
@@ -17,7 +17,7 @@ module.exports = NodeHelper.create({
     if (this.config.debug) log = (...args) => { console.log("[SCREEN]", ...args) }
     console.log("[SCREEN] EXT-Screen Version:", require('./package.json').version, "rev:", require('./package.json').rev)
     this.Screen()
-    console.log("[SCREEN] Initialized")
+    this.sendSocketNotification("INITIALIZED")
   },
 
   socketNotificationReceived: function (notification, payload) {
