@@ -23,6 +23,7 @@ class SCREEN {
       turnOffDisplay: true,
       ecoMode: true,
       displayCounter: true,
+      displayAvailability: true,
       displayBar: false,
       detectorSleeping: false,
       governorSleeping: false,
@@ -42,7 +43,10 @@ class SCREEN {
       isDelayed: false,
       awaitBeforeTurnOff: this.config.animateBody,
       awaitBeforeTurnOffTimer: null,
-      awaitBeforeTurnOffTime: this.config.animateTime
+      awaitBeforeTurnOffTime: this.config.animateTime,
+      uptime: Math.floor(process.uptime()),
+      availabilityCounter: Math.floor(process.uptime()),
+      availability: 0
     }
     if (this.config.turnOffDisplay) {
       switch (this.config.mode) {
@@ -136,6 +140,13 @@ class SCREEN {
         if (this.config.governorSleeping) this.governor("GOVERNOR_SLEEPING")
         this.sendSocketNotification("SCREEN_PRESENCE", false)
         log("Stops by counter.")
+      } else {
+        if (this.config.displayAvailability) {
+          this.screen.uptime = Math.floor(process.uptime())
+          this.screen.availabilityCounter++
+          this.screen.availability = Math.floor((this.screen.availabilityCounter*100)/this.screen.uptime)
+          this.sendSocketNotification("SCREEN_AVAILABILITY", this.screen.availability)
+        }
       }
       this.counter -= 1000
     }, 1000)

@@ -61,6 +61,23 @@ class screenDisplayer {
       presence.appendChild(presenceDate)
       dom.appendChild(presence)
     }
+
+    if (this.config.displayAvailability) {
+      /** display % availability of the screen **/
+      var availability = document.createElement("div")
+      availability.id = "EXT-SCREEN_AVAILABILITY"
+      availability.classList.add("bright")
+      var availabilityText = document.createElement("div")
+      availabilityText.id = "EXT-SCREEN_AVAILABILITY_TEXT"
+      availabilityText.textContent = this.translate("ScreenAvailability")
+      availability.appendChild(availabilityText)
+      var availabilityValue = document.createElement("div")
+      availabilityValue.id = "EXT-SCREEN_AVAILABILITY_DATA"
+      availabilityValue.classList.add("availability")
+      availabilityValue.textContent = "---%"
+      availability.appendChild(availabilityValue)
+      dom.appendChild(availability)
+    }
     return dom
   }
 

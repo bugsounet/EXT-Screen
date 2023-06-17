@@ -20,6 +20,7 @@ Module.register("EXT-Screen", {
       displayBar: true,
       displayStyle: "Text",
       displayLastPresence: true,
+      displayAvailability: true,
       lastPresenceTimeFormat: "LL H:mm",
       autoHide: true,
       delayed: 0,
@@ -102,6 +103,12 @@ Module.register("EXT-Screen", {
               type: "information",
               sound: this.config.sound ? "modules/EXT-Screen/sounds/close.mp3" : null
             })
+          }
+          break
+        case "SCREEN_AVAILABILITY":
+          if (this.config.displayAvailability) {
+            let availability= document.getElementById("EXT-SCREEN_AVAILABILITY_DATA")
+            availability.textContent= payload+"%"
           }
           break
         case "GOVERNOR_SLEEPING":
