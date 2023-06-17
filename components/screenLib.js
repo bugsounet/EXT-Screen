@@ -125,6 +125,12 @@ class SCREEN {
       if (this.config.displayBar) {
         this.sendSocketNotification("SCREEN_BAR", this.config.delay - this.counter )
       }
+      if (this.config.displayAvailability) {
+        this.screen.uptime = Math.floor(process.uptime())
+        this.screen.availabilityCounter++
+        this.screen.availability = Math.floor((this.screen.availabilityCounter*100)/this.screen.uptime)
+        this.sendSocketNotification("SCREEN_AVAILABILITY", this.screen.availability)
+      }
       if (this.counter <= 0) {
         clearInterval(this.interval)
         this.screen.running = false
@@ -140,13 +146,6 @@ class SCREEN {
         if (this.config.governorSleeping) this.governor("GOVERNOR_SLEEPING")
         this.sendSocketNotification("SCREEN_PRESENCE", false)
         log("Stops by counter.")
-      } else {
-        if (this.config.displayAvailability) {
-          this.screen.uptime = Math.floor(process.uptime())
-          this.screen.availabilityCounter++
-          this.screen.availability = Math.floor((this.screen.availabilityCounter*100)/this.screen.uptime)
-          this.sendSocketNotification("SCREEN_AVAILABILITY", this.screen.availability)
-        }
       }
       this.counter -= 1000
     }, 1000)
