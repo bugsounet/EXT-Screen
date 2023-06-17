@@ -84,6 +84,7 @@ class SCREEN {
           break
       }
     }
+    if (this.config.displayAvailability) this.screenAvailability()
   }
 
   activate () {
@@ -124,12 +125,6 @@ class SCREEN {
       }
       if (this.config.displayBar) {
         this.sendSocketNotification("SCREEN_BAR", this.config.delay - this.counter )
-      }
-      if (this.config.displayAvailability) {
-        this.screen.uptime = Math.floor(process.uptime())
-        this.screen.availabilityCounter++
-        this.screen.availability = Math.floor((this.screen.availabilityCounter*100)/this.screen.uptime)
-        this.sendSocketNotification("SCREEN_AVAILABILITY", this.screen.availability)
       }
       if (this.counter <= 0) {
         clearInterval(this.interval)
@@ -470,6 +465,18 @@ class SCREEN {
     return new Promise((resolve) => {
       this.screen.awaitBeforeTurnOffTimer = setTimeout(resolve, ms)
     })
+  }
+
+  screenAvailability() {
+    console.log("[SCREEN] Availability started")
+    setInterval(() => {
+      if (this.screen.power) {
+        this.screen.uptime = Math.floor(process.uptime())
+        this.screen.availabilityCounter++
+        this.screen.availability = Math.floor((this.screen.availabilityCounter*100)/this.screen.uptime)
+        this.sendSocketNotification("SCREEN_AVAILABILITY", this.screen.availability)
+      }
+    }, 1000)
   }
 }
 
