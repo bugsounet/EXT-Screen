@@ -470,12 +470,10 @@ class SCREEN {
   screenAvailability() {
     console.log("[SCREEN] Availability started")
     setInterval(() => {
-      if (this.screen.power) {
-        this.screen.uptime = Math.floor(process.uptime())
-        this.screen.availabilityCounter++
-        this.screen.availability = Math.floor((this.screen.availabilityCounter*100)/this.screen.uptime)
-        this.sendSocketNotification("SCREEN_AVAILABILITY", this.screen.availability)
-      }
+      this.screen.uptime = Math.floor(process.uptime())
+      if (this.screen.power) this.screen.availabilityCounter++
+      this.screen.availability = Math.floor((this.screen.availabilityCounter*100)/this.screen.uptime)
+      this.sendSocketNotification("SCREEN_AVAILABILITY", this.screen.availability)
     }, 1000)
   }
 }
