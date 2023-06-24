@@ -108,7 +108,7 @@ Module.register("EXT-Screen", {
         case "SCREEN_AVAILABILITY":
           if (this.config.displayAvailability) {
             let availability= document.getElementById("EXT-SCREEN_AVAILABILITY_DATA")
-            availability.textContent= payload+"%"
+            availability.textContent= payload.availability + " (" + payload.availabilityPercent + "%)"
           }
           break
         case "GOVERNOR_SLEEPING":

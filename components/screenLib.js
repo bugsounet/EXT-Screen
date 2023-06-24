@@ -46,7 +46,9 @@ class SCREEN {
       awaitBeforeTurnOffTime: this.config.animateTime,
       uptime: Math.floor(process.uptime()),
       availabilityCounter: Math.floor(process.uptime()),
-      availability: 0
+      availabilityPercent: 0,
+      availabilityTimeHuman: 0,
+      AvailabilityTimeSec: 0
     }
     if (this.config.turnOffDisplay) {
       switch (this.config.mode) {
@@ -84,7 +86,20 @@ class SCREEN {
           break
       }
     }
-    if (this.config.displayAvailability) this.screenAvailability()
+    if (this.config.displayAvailability) {
+      Number.prototype.toHHMMSS = function () {
+    var sec_num = parseInt(this, 10); // don't forget the second param
+    var hours   = Math.floor(sec_num / 3600);
+    var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+    var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return hours+':'+minutes+':'+seconds;
+}
+      this.screenAvailability()
+    }
   }
 
   activate () {
@@ -472,8 +487,14 @@ class SCREEN {
     setInterval(() => {
       this.screen.uptime = Math.floor(process.uptime())
       if (this.screen.power) this.screen.availabilityCounter++
-      this.screen.availability = Math.floor((this.screen.availabilityCounter*100)/this.screen.uptime)
-      this.sendSocketNotification("SCREEN_AVAILABILITY", this.screen.availability)
+      this.screen.availabilityPercent = (this.screen.availabilityCounter*100)/this.screen.uptime
+      this.screen.availabilityTimeSec = this.screen.availabilityCounter > 86400 ? (this.screen.availabilityPercent * 864) : this.screen.availabilityCounter
+      this.screen.availabilityTimeHuman = this.screen.availabilityTimeSec.toHHMMSS()
+      let availability = {
+        availabilityPercent: this.screen.availabilityPercent,
+        availability: this.screen.availabilityTimeHuman
+      }
+      this.sendSocketNotification("SCREEN_AVAILABILITY", availability)
     }, 1000)
   }
 }

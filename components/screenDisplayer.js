@@ -74,7 +74,7 @@ class screenDisplayer {
       var availabilityValue = document.createElement("div")
       availabilityValue.id = "EXT-SCREEN_AVAILABILITY_DATA"
       availabilityValue.classList.add("availability")
-      availabilityValue.textContent = "---%"
+      availabilityValue.textContent = "--:--:-- (---%)"
       availability.appendChild(availabilityValue)
       dom.appendChild(availability)
     }
