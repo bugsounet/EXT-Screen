@@ -27,20 +27,25 @@ Installer_version="$(grep -Eo '\"version\"[^,]*' ./package.json | grep -Eo '[^:]
 Installer_module="$(grep -Eo '\"name\"[^,]*' ./package.json | grep -Eo '[^:]*$' | awk  -F'\"' '{print $2}')"
 
 # Let's start !
-Installer_info "Welcome to $Installer_module v$Installer_version"
+Installer_info "Welcome to $Installer_module v$Installer_version updater"
 
 echo
 
 # Check not run as root
 if [ "$EUID" -eq 0 ]; then
   Installer_error "npm install must not be used as root"
+  echo
   exit 1
 fi
 
 Installer_info "Updating..."
 
-git reset --hard
-git pull
+(git reset --hard && git pull) || {
+  echo
+  Installer_error "Update error"
+  echo
+  exit 1
+}
 
 echo
 Installer_info "Ready for Installing..."
