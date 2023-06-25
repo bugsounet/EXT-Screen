@@ -7,7 +7,7 @@
 var logScreen = (...args) => { /* do nothing */ }
 
 Module.register("EXT-Screen", {
-    requiresVersion: "2.22.0",
+    requiresVersion: "2.23.0",
     defaults: {
       debug: false,
       animateBody: true,

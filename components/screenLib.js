@@ -8,11 +8,11 @@ const path = require('path')
 var log = (...args) => { /* do nothing */ }
 
 class SCREEN {
-  constructor(config, callback, debug, detectorControl, governorControl) {
+  constructor(config, callbacks) {
     this.config = config
-    this.sendSocketNotification = callback
-    this.detector = detectorControl
-    this.governor = governorControl
+    this.sendSocketNotification = callbacks.sendSocketNotification
+    this.detector = callbacks.detector
+    this.governor = callbacks.governor
     if (this.config.debug) log = (...args) => { console.log("[SCREEN] [LIB]", ...args) }
     this.PathScript = path.dirname(require.resolve('../package.json'))+"/scripts"
     this.interval = null
@@ -26,7 +26,6 @@ class SCREEN {
       displayAvailability: true,
       displayBar: false,
       detectorSleeping: false,
-      governorSleeping: false,
       mode: 1,
       delayed: 0,
       gpio: 20,
@@ -106,7 +105,7 @@ class SCREEN {
     if (!this.config.turnOffDisplay && !this.config.ecoMode) return log("Disabled.")
     process.on('exit', (code) => {
       if (this.config.turnOffDisplay && this.config.mode) this.setPowerDisplay(true)
-      if (this.config.governorSleeping) this.governor("GOVERNOR_WORKING")
+      this.governor("GOVERNOR_WORKING")
       console.log('[SCREEN] ByeBye !')
       console.log('[SCREEN] @bugsounet')
     })
@@ -121,12 +120,12 @@ class SCREEN {
     this.screen.awaitBeforeTurnOffTimer= null
     this.sendSocketNotification("SCREEN_PRESENCE", true)
     if (!this.screen.power) {
+      this.governor("GOVERNOR_WORKING")
       if (this.config.turnOffDisplay && this.config.mode) this.wantedPowerDisplay(true)
       if (this.config.ecoMode) {
         this.sendSocketNotification("SCREEN_SHOWING")
         this.screen.power = true
       }
-      if (this.config.governorSleeping) this.governor("GOVERNOR_WORKING")
     }
     clearInterval(this.interval)
     this.interval = null
@@ -153,7 +152,7 @@ class SCREEN {
         }
         this.interval = null
         if (this.config.detectorSleeping) this.detector("DETECTOR_STOP")
-        if (this.config.governorSleeping) this.governor("GOVERNOR_SLEEPING")
+        this.governor("GOVERNOR_SLEEPING")
         this.sendSocketNotification("SCREEN_PRESENCE", false)
         log("Stops by counter.")
       }
@@ -165,7 +164,7 @@ class SCREEN {
     if (this.screen.locked) return
 
     if (!this.screen.power) {
-      if (this.config.governorSleeping) this.governor("GOVERNOR_WORKING")
+      this.governor("GOVERNOR_WORKING")
       if (this.config.turnOffDisplay && this.config.mode) this.wantedPowerDisplay(true)
       if (this.config.ecoMode) {
         this.sendSocketNotification("SCREEN_SHOWING")
@@ -488,10 +487,10 @@ class SCREEN {
       this.screen.uptime = Math.floor(process.uptime())
       if (this.screen.power) this.screen.availabilityCounter++
       this.screen.availabilityPercent = (this.screen.availabilityCounter*100)/this.screen.uptime
-      this.screen.availabilityTimeSec = this.screen.availabilityCounter > 86400 ? (this.screen.availabilityPercent * 864) : this.screen.availabilityCounter
+      this.screen.availabilityTimeSec = this.screen.uptime > 86400 ? (this.screen.availabilityPercent * 864) : this.screen.availabilityCounter
       this.screen.availabilityTimeHuman = this.screen.availabilityTimeSec.toHHMMSS()
       let availability = {
-        availabilityPercent: Math.floor(this.screen.availabilityPercent),
+        availabilityPercent:parseFloat(this.screen.availabilityPercent.toFixed(1)),
         availability: this.screen.availabilityTimeHuman
       }
       this.sendSocketNotification("SCREEN_AVAILABILITY", availability)

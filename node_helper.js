@@ -69,24 +69,17 @@ module.exports = NodeHelper.create({
         this.sendSocketNotification(noti, params)
         //log("Callback Notification:", noti,params)
       },
-      "governor": (gov) => {
-        this.sendSocketNotification(gov)
+      "detector": (noti, param) => {
+        log("Callback Detector:", noti)
+        this.sendSocketNotification(noti)
+      },
+      "governor": (noti, param) => {
+        log("Callback Governor:", noti)
+        this.sendSocketNotification(noti)
       },
     }
-    /** constructor(
-     *    config,
-     *    callback,
-     *    debug,
-     *    detectorControl,
-     *    governorControl
-     * ) **/
-    this.screen = new LibScreen(
-      this.config,
-      callbacks.sendSocketNotification,
-      this.config.debug,
-      callbacks.sendSocketNotification,
-      callbacks.governor
-    )
+
+    this.screen = new LibScreen(this.config,callbacks)
     this.screen.activate()
   }
 });

@@ -4,14 +4,13 @@ class screenDisplayer {
     this.translate = (...args) => that.translate(...args)
     this.bar = null
     this.init = null
+    this.autoHide = false
     console.log("[SCREEN] screenDisplayer Ready")
   }
 
   prepare() {
     var dom = document.createElement("div")
     dom.id = "EXT-SCREEN"
-    dom.className= "animate__animated"
-    dom.style.setProperty('--animate-duration', '1s')
 
     if (this.config.displayCounter || this.config.displayBar) {
       /** Screen TimeOut Text **/
@@ -63,7 +62,7 @@ class screenDisplayer {
     }
 
     if (this.config.displayAvailability) {
-      /** display % availability of the screen **/
+      /** availability of the screen **/
       var availability = document.createElement("div")
       availability.id = "EXT-SCREEN_AVAILABILITY"
       availability.classList.add("bright")
@@ -123,63 +122,46 @@ class screenDisplayer {
 
   prepareBody() {
     document.body.id = "EXT_SCREEN_ANIMATE"
-    document.body.className= "animate__animated"
-    document.body.style.setProperty('--animate-duration', '1s')
   }
 
-  screenShowing() {
-    MM.getModules().enumerate((module)=> {
-      module.show(500, {lockString: "EXT-SCREEN_LOCK"})
-    })
+  async screenShowing() {
     if (!this.init) return this.init = true
+    MM.getModules().enumerate((module)=> {
+      module.show(0, () => {}, {lockString: "EXT-SCREEN_LOCK"})
+    })
     if (this.config.animateBody) {
-      document.body.classList.remove("animate__zoomOut")
-      document.body.style.animationFillMode = "inherit"
-      document.body.classList.add("animate__zoomIn")
+      await this.screenAnimate("EXT_SCREEN_ANIMATE", "zoomIn")
     }
     logScreen("Show All modules.")
   }
 
-  screenHiding() {
+  async screenHiding() {
+    MM.getModules().enumerate((module)=> {
+      module.hide(1000, () => {}, {lockString: "EXT-SCREEN_LOCK"})
+    })
     if (this.config.animateBody) {
-      document.body.classList.remove("animate__zoomIn")
-      document.body.style.animationFillMode = "both"
-      document.body.classList.add("animate__zoomOut")
-      document.body.addEventListener('animationend', (e) => {
-        if (e.animationName == "zoomOut") {
-          MM.getModules().enumerate((module)=> {
-            module.hide(1000, {lockString: "EXT-SCREEN_LOCK"})
-          })
-        }
-        e.stopPropagation()
-      }, {once: true})
-    } else {
-      MM.getModules().enumerate((module)=> {
-        module.hide(1000, {lockString: "EXT-SCREEN_LOCK"})
-      })
+      await this.screenAnimate("EXT_SCREEN_ANIMATE", "zoomOut")
     }
     logScreen("Hide All modules.")
   }
 
   /** Hide EXT with Flip animation **/
-  hideDivWithAnimatedFlip (div) {
+  async hideDivWithAnimatedFlip (div) {
     if (!this.config.autoHide) return
+    if (this.autoHide) return logScreen("Already Hidden.")
+    this.autoHide = true
     var module = document.getElementById(div)
-    module.classList.remove("animate__flipInX")
-    module.classList.add("animate__flipOutX")
-    module.addEventListener('animationend', (e) => {
-      if (e.animationName == "flipOutX") {
-        module.classList.add("hidden")
-      }
-      e.stopPropagation()
-    }, {once: true})
+    await this.screenAnimate(div, "flipOutX")
+    module.classList.add("hidden")
   }
 
-  showDivWithAnimatedFlip (div) {
+  async showDivWithAnimatedFlip (div) {
     if (!this.config.autoHide) return
+    if (!this.autoHide) return logScreen("Already Showing.")
+    this.autoHide = false
     var module = document.getElementById(div)
-    module.classList.remove("animate__flipOutX", "hidden")
-    module.classList.add("animate__flipInX")
+    module.classList.remove("hidden")
+    await this.screenAnimate(div, "flipInX")
   }
 
   checkStyle () {
@@ -193,5 +175,32 @@ class screenDisplayer {
       console.error("[SCREEN] displayStyle Error ! ["+ this.config.displayStyle + "]")
       this.config.displayStyle = "Text"
     }
+  }
+
+  screenAnimate = (element, animation, duration = 1, prefix = 'animate__') => {
+    // We create a Promise and return it
+    return new Promise((resolve, reject) => {
+      const animationName = `${prefix}${animation}`
+      const node = document.getElementById(element)
+      if (!node) {
+        // don't execute animate and resolve
+        console.error("[EXT-Screen] AnimateCSS: node not found for", element)
+        resolve()
+        return
+      }
+      node.style.setProperty('--animate-duration', duration + 's')
+      node.classList.add(`${prefix}animated`, animationName)
+
+      // When the animation ends, we clean the classes and resolve the Promise
+      function handleAnimationEnd(event) {
+        event.stopPropagation()
+        node.classList.remove(`${prefix}animated`, animationName)
+        node.style.removeProperty('--animate-duration', duration + 's')
+        logScreen("[EXT-Screen] Animation ended:", animation)
+        resolve()
+      }
+
+      node.addEventListener('animationend', handleAnimationEnd, {once: true})
+    })
   }
 }
