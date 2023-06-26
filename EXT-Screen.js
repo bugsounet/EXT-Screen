@@ -20,14 +20,14 @@ Module.register("EXT-Screen", {
       displayBar: true,
       displayStyle: "Text",
       displayLastPresence: true,
-      displayAvailability: true,
       lastPresenceTimeFormat: "LL H:mm",
+      displayAvailability: true,
       autoHide: true,
-      delayed: 0,
       detectorSleeping: false,
       gpio: 20,
       clearGpioValue: true,
-      sound: false
+      sound: false,
+      touchMode: 3
     },
 
     start: function () {
@@ -35,7 +35,7 @@ Module.register("EXT-Screen", {
         "Gateway",
         "EXT-Pir",
         "EXT-ScreenManager",
-        "EXT-ScreenTouch",
+        "EXT-Screen",
         "EXT-Motion",
         "EXT-Keyboard",
         "EXT-StreamDeck"
@@ -47,6 +47,7 @@ Module.register("EXT-Screen", {
       this.ready = false
       this.screenDisplay = new screenDisplayer(this)
       this.screenDisplay.checkStyle()
+      this.screenTouch = new screenTouch(this)
       logScreen("is now started!")
     },
 
@@ -54,6 +55,7 @@ Module.register("EXT-Screen", {
       switch(notification) {
         case "INITIALIZED":
           this.sendNotification("EXT_HELLO", this.name)
+          this.screenTouch.touch(this)
           this.ready = true
           break
         case "SCREEN_SHOWING":
@@ -212,7 +214,9 @@ Module.register("EXT-Screen", {
     getScripts: function () {
       return [
         "/modules/EXT-Screen/components/progressbar.js",
-        "/modules/EXT-Screen/components/screenDisplayer.js"
+        "/modules/EXT-Screen/components/long-press-event.js",
+        "/modules/EXT-Screen/components/screenDisplayer.js",
+        "/modules/EXT-Screen/components/screenTouch.js"
       ]
     },
 

@@ -196,7 +196,7 @@ class screenDisplayer {
         event.stopPropagation()
         node.classList.remove(`${prefix}animated`, animationName)
         node.style.removeProperty('--animate-duration', duration + 's')
-        logScreen("[EXT-Screen] Animation ended:", animation)
+        logScreen("Animation ended:", animation)
         resolve()
       }
 

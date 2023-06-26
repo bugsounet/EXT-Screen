@@ -27,7 +27,6 @@ class SCREEN {
       displayBar: false,
       detectorSleeping: false,
       mode: 1,
-      delayed: 0,
       gpio: 20,
       clearGpioValue: true
     }
@@ -38,8 +37,6 @@ class SCREEN {
       locked: false,
       GHLocked: false,
       power: false,
-      delayed: this.config.delayed,
-      isDelayed: false,
       awaitBeforeTurnOff: this.config.animateBody,
       awaitBeforeTurnOffTimer: null,
       awaitBeforeTurnOffTime: this.config.animateTime,
@@ -184,29 +181,18 @@ class SCREEN {
     clearInterval(this.interval)
     this.interval = null
     this.screen.running = false
-    this.screen.isDelayed = false
     this.start(true)
   }
 
   wakeup() {
     if (this.screen.GHLocked) return log("[wakeup] nop, it's Locked by GH")
-    if (this.screen.locked || this.screen.isDelayed) return
-    if (this.screen.delayed && !this.screen.power) {
-      this.screen.isDelayed = true
-      log("Delayed wakeup in", this.screen.delayed, "ms")
-      setTimeout(() => {
-        log("Delayed wakeup")
-        if (this.config.detectorSleeping) this.detector("DETECTOR_START")
-        this.reset()
-      }, this.screen.delayed)
-    } else {
-      if (!this.screen.power && this.config.detectorSleeping) this.detector("DETECTOR_START")
-      this.reset()
-    }
+    if (this.screen.locked) return
+    if (!this.screen.power && this.config.detectorSleeping) this.detector("DETECTOR_START")
+    this.reset()
   }
 
   lock() {
-    if (this.screen.GHLocked) return log("[lock]nop, it's Locked by GH")
+    if (this.screen.GHLocked) return log("[lock] nop, it's Locked by GH")
     if (this.screen.locked) return
     this.screen.locked = true
     clearInterval(this.interval)
