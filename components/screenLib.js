@@ -38,7 +38,7 @@ class SCREEN {
       power: false,
       awaitBeforeTurnOff: this.config.animateBody,
       awaitBeforeTurnOffTimer: null,
-      awaitBeforeTurnOffTime: 1500,
+      awaitBeforeTurnOffTime: 2000,
       uptime: Math.floor(process.uptime()),
       availabilityCounter: Math.floor(process.uptime()),
       availabilityPercent: 0,
