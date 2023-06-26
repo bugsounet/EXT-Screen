@@ -18,7 +18,6 @@ class SCREEN {
     this.interval = null
     this.default = {
       animateBody: false,
-      animateTime: 3000,
       delay: 5 * 60 * 1000,
       turnOffDisplay: true,
       ecoMode: true,
@@ -39,7 +38,7 @@ class SCREEN {
       power: false,
       awaitBeforeTurnOff: this.config.animateBody,
       awaitBeforeTurnOffTimer: null,
-      awaitBeforeTurnOffTime: this.config.animateTime,
+      awaitBeforeTurnOffTime: 1500,
       uptime: Math.floor(process.uptime()),
       availabilityCounter: Math.floor(process.uptime()),
       availabilityPercent: 0,

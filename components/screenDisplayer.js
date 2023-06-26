@@ -127,7 +127,7 @@ class screenDisplayer {
   async screenShowing() {
     if (!this.init) return this.init = true
     MM.getModules().enumerate((module)=> {
-      module.show(0, () => {}, {lockString: "EXT-SCREEN_LOCK"})
+      module.show(1000, () => {}, {lockString: "EXT-SCREEN_LOCK"})
     })
     if (this.config.animateBody) {
       await this.screenAnimate("EXT_SCREEN_ANIMATE", "zoomIn")
@@ -177,10 +177,10 @@ class screenDisplayer {
     }
   }
 
-  screenAnimate = (element, animation, duration = 1, prefix = 'animate__') => {
+  screenAnimate = (element, animation) => {
     // We create a Promise and return it
     return new Promise((resolve, reject) => {
-      const animationName = `${prefix}${animation}`
+      const animationName = `animate__${animation}`
       const node = document.getElementById(element)
       if (!node) {
         // don't execute animate and resolve
@@ -188,14 +188,12 @@ class screenDisplayer {
         resolve()
         return
       }
-      node.style.setProperty('--animate-duration', duration + 's')
-      node.classList.add(`${prefix}animated`, animationName)
+      node.classList.add('animate__animated', animationName)
 
       // When the animation ends, we clean the classes and resolve the Promise
       function handleAnimationEnd(event) {
         event.stopPropagation()
-        node.classList.remove(`${prefix}animated`, animationName)
-        node.style.removeProperty('--animate-duration', duration + 's')
+        node.classList.remove('animate__animated', animationName)
         logScreen("Animation ended:", animation)
         resolve()
       }
