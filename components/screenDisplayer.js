@@ -152,7 +152,6 @@ class screenDisplayer {
 
   /** Hide EXT with Flip animation **/
   hideDivWithAnimatedFlip (div) {
-    if (!this.config.autoHide) return
     if (this.autoHide) return logScreen("Already Hidden.")
     this.autoHide = true
     var module = document.getElementById(div)
@@ -167,7 +166,6 @@ class screenDisplayer {
   }
 
   showDivWithAnimatedFlip (div) {
-    if (!this.config.autoHide) return
     if (!this.autoHide) return logScreen("Already Showing.")
     this.autoHide = false
     var module = document.getElementById(div)

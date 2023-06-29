@@ -12,16 +12,13 @@ Module.register("EXT-Screen", {
       debug: false,
       animateBody: true,
       delay: 2 * 60 * 1000,
-      turnOffDisplay: true,
       mode: 1,
-      ecoMode: true,
       displayCounter: true,
       displayBar: true,
       displayStyle: "Text",
       displayLastPresence: true,
       lastPresenceTimeFormat: "LL H:mm",
       displayAvailability: true,
-      autoHide: true,
       detectorSleeping: false,
       gpio: 20,
       clearGpioValue: true,
@@ -190,34 +187,12 @@ Module.register("EXT-Screen", {
             })
           }
           break
-          /*
-        case "EXT_SCREEN-FORCE_LOCK":
-          this.sendSocketNotification("FORCELOCK")
-          this.screenDisplay.hideDivWithAnimatedFlip("EXT-SCREEN")
-          if (this.ignoreSender.indexOf(sender.name) == -1) {
-            this.sendNotification("EXT_ALERT", {
-              message: this.translate("ScreenLock", { VALUES: sender.name }),
-              type: "information",
-            })
-          }
-          break
-        case "EXT_SCREEN-FORCE_UNLOCK":
-          this.sendSocketNotification("FORCEUNLOCK")
-          this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
-          if (this.ignoreSender.indexOf(sender.name) == -1) {
-            this.sendNotification("EXT_ALERT", {
-              message: this.translate("ScreenUnLock", { VALUES: sender.name }),
-              type: "information",
-            })
-          }
-          break
         case "EXT_SCREEN-GH_FORCE_END":
           this.sendSocketNotification("GH_FORCE_END")
           break
         case "EXT_SCREEN-GH_FORCE_WAKEUP":
           this.sendSocketNotification("GH_FORCE_WAKEUP")
           break
-          */
       }
     },
 

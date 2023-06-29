@@ -31,25 +31,12 @@ module.exports = NodeHelper.create({
       case "UNLOCK":
         this.screen.unlock()
         break
-        /*
-      case "FORCELOCK":
-        this.forceLocked = true
-        this.screen.lock()
-        break
-      case "FORCEUNLOCK":
-        this.forceLocked = false
-        this.screen.unlock()
-        break
       case "GH_FORCE_END":
-        if (this.forceLocked) return log("[GH_FORCE_END] Sorry, it's Force-Locked!")
-        this.screen.GHforceEndAndLock()
-        this.forceLocked = true
+        this.screen.GHforceEnd()
         break
       case "GH_FORCE_WAKEUP":
-        this.forceLocked = false
         this.screen.GHforceWakeUp()
         break
-        */
     }
   },
 
@@ -58,12 +45,6 @@ module.exports = NodeHelper.create({
     console.log("[SCREEN] EXT-Screen Version:", require('./package.json').version, "rev:", require('./package.json').rev)
     var callbacks= {
       /** LibCron **/
-      "ON": (noti) => {
-        
-      },
-      "OFF": (noti) => {
-        
-      },
       "cronState": (param) => {
         this.screen.cronState(param)
       },

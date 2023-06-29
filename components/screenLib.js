@@ -19,8 +19,6 @@ class SCREEN {
     this.default = {
       animateBody: false,
       delay: 5 * 60 * 1000,
-      turnOffDisplay: true,
-      ecoMode: true,
       displayCounter: true,
       displayAvailability: true,
       displayBar: false,
@@ -48,42 +46,42 @@ class SCREEN {
       cronON: false,
       cronOFF: false
     }
-    if (this.config.turnOffDisplay) {
-      switch (this.config.mode) {
-        case 0:
-          console.log("[SCREEN] Mode 0: Disabled")
-          break
-        case 1:
-          console.log("[SCREEN] Mode 1: vcgencmd")
-          break
-        case 2:
-          console.log("[SCREEN] Mode 2: dpms rpi")
-          break
-        case 3:
-          console.log("[SCREEN] Mode 3: tvservice")
-          break
-        case 4:
-          console.log("[SCREEN] Mode 4: HDMI CEC")
-          break
-        case 5:
-          console.log("[SCREEN] Mode 5: dpms linux")
-          break
-        case 6:
-          console.log("[SCREEN] Mode 6: Python script (Relay on/off)")
-          break
-        case 7:
-          console.log("[SCREEN] Mode 7: Python script reverse (Relay on/off)")
-          break
-        case 8:
-          console.log("[SCREEN] Mode 8: ddcutil")
-          break
-        default:
-          this.logError("Unknow Mode Set to 0 (Disabled)")
-          this.sendSocketNotification("ERROR", "[SCREEN] Unknow Mode (" + this.config.mode + ") Set to 0 (Disabled)")
-          this.config.mode = 0
-          break
-      }
+
+    switch (this.config.mode) {
+      case 0:
+        console.log("[SCREEN] Mode 0: Disabled")
+        break
+      case 1:
+        console.log("[SCREEN] Mode 1: vcgencmd")
+        break
+      case 2:
+        console.log("[SCREEN] Mode 2: dpms rpi")
+        break
+      case 3:
+        console.log("[SCREEN] Mode 3: tvservice")
+        break
+      case 4:
+        console.log("[SCREEN] Mode 4: HDMI CEC")
+        break
+      case 5:
+        console.log("[SCREEN] Mode 5: dpms linux")
+        break
+      case 6:
+        console.log("[SCREEN] Mode 6: Python script (Relay on/off)")
+        break
+      case 7:
+        console.log("[SCREEN] Mode 7: Python script reverse (Relay on/off)")
+        break
+      case 8:
+        console.log("[SCREEN] Mode 8: ddcutil")
+        break
+      default:
+        this.logError("Unknow Mode Set to 0 (Disabled)")
+        this.sendSocketNotification("ERROR", "[SCREEN] Unknow Mode (" + this.config.mode + ") Set to 0 (Disabled)")
+        this.config.mode = 0
+        break
     }
+
     if (this.config.displayAvailability) {
       Number.prototype.toHHMMSS = function () {
         var sec_num = parseInt(this, 10); // don't forget the second param
@@ -101,9 +99,8 @@ class SCREEN {
   }
 
   activate () {
-    if (!this.config.turnOffDisplay && !this.config.ecoMode) return log("Disabled.")
     process.on('exit', (code) => {
-      if (this.config.turnOffDisplay && this.config.mode) this.setPowerDisplay(true)
+      if (this.config.mode) this.setPowerDisplay(true)
       this.governor("GOVERNOR_WORKING")
       console.log('[SCREEN] ByeBye !')
       console.log('[SCREEN] @bugsounet')
@@ -112,7 +109,7 @@ class SCREEN {
   }
 
   start (restart) {
-    if (this.screen.locked || this.screen.running || (!this.config.turnOffDisplay && !this.config.ecoMode)) return
+    if (this.screen.locked || this.screen.running) return
     if (!restart) log("Start.")
     else log("Restart.")
     clearTimeout(this.screen.awaitBeforeTurnOffTimer)
@@ -120,11 +117,9 @@ class SCREEN {
     this.sendSocketNotification("SCREEN_PRESENCE", true)
     if (!this.screen.power) {
       this.governor("GOVERNOR_WORKING")
-      if (this.config.turnOffDisplay && this.config.mode) this.wantedPowerDisplay(true)
-      if (this.config.ecoMode) {
-        this.sendSocketNotification("SCREEN_SHOWING")
-        this.screen.power = true
-      }
+      if (this.config.mode) this.wantedPowerDisplay(true)
+      this.sendSocketNotification("SCREEN_SHOWING")
+      this.screen.power = true
     }
     clearInterval(this.interval)
     this.interval = null
@@ -141,34 +136,33 @@ class SCREEN {
       }
       if (this.counter <= 0) {
         clearInterval(this.interval)
-        this.screen.running = false
-        if (this.screen.power) {
-          if (this.config.ecoMode) {
-            this.sendSocketNotification("SCREEN_HIDING")
-            this.screen.power = false
-          }
-          if (this.config.turnOffDisplay && this.config.mode) this.wantedPowerDisplay(false)
-        }
         this.interval = null
-        if (this.config.detectorSleeping) this.detector("DETECTOR_STOP")
-        this.governor("GOVERNOR_SLEEPING")
-        this.sendSocketNotification("SCREEN_PRESENCE", false)
+        this.screen.running = false
+        this.forceTurnOffScreen()
         log("Stops by counter.")
       }
       this.counter -= 1000
     }, 1000)
   }
 
-  stop () {
+  forceTurnOffScreen() {
+    if (!this.screen.power) return log("forceTurnOffScreen: already off")
+    this.sendSocketNotification("SCREEN_HIDING")
+    this.screen.power = false
+    if (this.config.mode) this.wantedPowerDisplay(false)
+    if (this.config.detectorSleeping) this.detector("DETECTOR_STOP")
+    this.governor("GOVERNOR_SLEEPING")
+    this.sendSocketNotification("SCREEN_PRESENCE", false)
+  }
+
+  stop() {
     if (this.screen.locked) return
 
     if (!this.screen.power) {
       this.governor("GOVERNOR_WORKING")
-      if (this.config.turnOffDisplay && this.config.mode) this.wantedPowerDisplay(true)
-      if (this.config.ecoMode) {
-        this.sendSocketNotification("SCREEN_SHOWING")
-        this.screen.power = true
-      }
+      if (this.config.mode) this.wantedPowerDisplay(true)
+      this.sendSocketNotification("SCREEN_SHOWING")
+      this.screen.power = true
     }
     this.sendSocketNotification("SCREEN_PRESENCE", true)
     if (!this.screen.running) return
@@ -202,14 +196,18 @@ class SCREEN {
   }
 
   unlock() {
-    if (this.screen.forceLocked) return log("ForceLocked")
+    if (this.screen.forceLocked) return log("Unlock: ForceLocked")
     log("Unlocked !")
     this.screen.locked = false
     this.start()
   }
 
   forceEnd () {
+    clearInterval(this.interval)
+    this.interval = null
+    this.screen.running = false
     this.counter = 0
+    this.forceTurnOffScreen()
   }
 
   wantedPowerDisplay (wanted) {
@@ -486,6 +484,27 @@ class SCREEN {
       this.unlock()
     }
     this.sendSocketNotification("SCREEN_FORCELOCKED", this.screen.forceLocked)
+  }
+
+  GHforceEnd () {
+    if (!this.screen.power) return log("already off")
+    this.screen.forceLocked = true
+    this.screen.locked = true
+    clearInterval(this.interval)
+    this.interval = null
+    this.counter = 0
+    this.screen.running = false
+    this.forceTurnOffScreen()
+    log("[GH] Locked !")
+  }
+
+  GHforceWakeUp () {
+    if (this.screen.power) return log("already on")
+    this.screen.forceLocked = false
+    this.screen.locked = false
+    this.wakeup()
+    if (this.screen.cronON) this.lock()
+    log("[GH] UnLocked !")
   }
 }
 
