@@ -26,7 +26,21 @@ Module.register("EXT-Screen", {
       gpio: 20,
       clearGpioValue: true,
       sound: false,
-      touchMode: 3
+      touchMode: 3,
+      ON: [
+      //  {
+      //    dayOfWeek: [0],
+      //    hour: 7,
+      //    minute: 45
+      //  }
+      ],
+      OFF: [
+      //  {
+      //    dayOfWeek: [1],
+      //    hour: 17,
+      //    minute: 00
+      //  }
+      ]
     },
 
     start: function () {
@@ -124,6 +138,9 @@ Module.register("EXT-Screen", {
         case "DETECTOR_STOP":
           this.sendNotification("EXT_DETECTOR-STOP")
           break
+        case "SCREEN_FORCELOCKED":
+          this.screenDisplay.hideShowCounter(payload)
+          break
       }
     },
 
@@ -161,16 +178,6 @@ Module.register("EXT-Screen", {
             })
           }
           break
-        case "EXT_SCREEN-FORCE_LOCK":
-          this.sendSocketNotification("FORCELOCK")
-          this.screenDisplay.hideDivWithAnimatedFlip("EXT-SCREEN")
-          if (this.ignoreSender.indexOf(sender.name) == -1) {
-            this.sendNotification("EXT_ALERT", {
-              message: this.translate("ScreenLock", { VALUES: sender.name }),
-              type: "information",
-            })
-          }
-          break
         case "EXT_SCREEN-UNLOCK":
           this.sendSocketNotification("UNLOCK")
           let HiddenUnLock = true
@@ -179,6 +186,17 @@ Module.register("EXT-Screen", {
           if (this.ignoreSender.indexOf(sender.name) == -1) {
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenUnLock", { VALUES: sender.name }),
+              type: "information",
+            })
+          }
+          break
+          /*
+        case "EXT_SCREEN-FORCE_LOCK":
+          this.sendSocketNotification("FORCELOCK")
+          this.screenDisplay.hideDivWithAnimatedFlip("EXT-SCREEN")
+          if (this.ignoreSender.indexOf(sender.name) == -1) {
+            this.sendNotification("EXT_ALERT", {
+              message: this.translate("ScreenLock", { VALUES: sender.name }),
               type: "information",
             })
           }
@@ -199,6 +217,7 @@ Module.register("EXT-Screen", {
         case "EXT_SCREEN-GH_FORCE_WAKEUP":
           this.sendSocketNotification("GH_FORCE_WAKEUP")
           break
+          */
       }
     },
 

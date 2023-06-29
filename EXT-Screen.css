@@ -5,10 +5,6 @@
   line-height: 99%; 
 }
 
-#EXT-SCREEN.hidden {
-  display: none;
-}
-
 #EXT-SCREEN_TEXT {
   margin-right: 10px;
 }
@@ -20,6 +16,8 @@
   display: flex;
 }
 
+#EXT-SCREEN.hidden,
+#EXT-SCREEN_COUNTERS.hidden,
 #EXT-SCREEN_PRESENCE.hidden,
 #EXT-SCREEN_BAR.hidden,
 #EXT-SCREEN_SCREEN.hidden {

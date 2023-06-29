@@ -34,7 +34,6 @@ class SCREEN {
       mode: this.config.mode,
       running: false,
       locked: false,
-      GHLocked: false,
       power: false,
       awaitBeforeTurnOff: this.config.animateBody,
       awaitBeforeTurnOffTimer: null,
@@ -43,7 +42,11 @@ class SCREEN {
       availabilityCounter: Math.floor(process.uptime()),
       availabilityPercent: 0,
       availabilityTimeHuman: 0,
-      AvailabilityTimeSec: 0
+      AvailabilityTimeSec: 0,
+      forceLocked: false,
+      cronStarted: false,
+      cronON: false,
+      cronOFF: false
     }
     if (this.config.turnOffDisplay) {
       switch (this.config.mode) {
@@ -184,14 +187,12 @@ class SCREEN {
   }
 
   wakeup() {
-    if (this.screen.GHLocked) return log("[wakeup] nop, it's Locked by GH")
     if (this.screen.locked) return
     if (!this.screen.power && this.config.detectorSleeping) this.detector("DETECTOR_START")
     this.reset()
   }
 
   lock() {
-    if (this.screen.GHLocked) return log("[lock] nop, it's Locked by GH")
     if (this.screen.locked) return
     this.screen.locked = true
     clearInterval(this.interval)
@@ -201,7 +202,7 @@ class SCREEN {
   }
 
   unlock() {
-    if (this.screen.GHLocked) return log("[unlock] nop, it's Locked by GH")
+    if (this.screen.forceLocked) return log("ForceLocked")
     log("Unlocked !")
     this.screen.locked = false
     this.start()
@@ -209,23 +210,6 @@ class SCREEN {
 
   forceEnd () {
     this.counter = 0
-  }
-
-  GHforceEndAndLock () {
-    this.screen.locked = false
-    this.start(true)
-    this.screen.running = false
-    this.screen.GHLocked = true
-    this.counter = 0
-    log("[GH] Locked !")
-  }
-
-  GHforceWakeUp () {
-    if (!this.screen.power && this.config.detectorSleeping) this.detector("DETECTOR_START")
-    this.screen.GHLocked = false
-    this.screen.locked = false
-    this.start(true)
-    log("[GH] UnLocked !")
   }
 
   wantedPowerDisplay (wanted) {
@@ -480,6 +464,28 @@ class SCREEN {
       }
       this.sendSocketNotification("SCREEN_AVAILABILITY", availability)
     }, 1000)
+  }
+  
+  cronState(state) {
+    this.screen.cronStarted= state.started
+    this.screen.cronON= state.ON
+    this.screen.cronOFF= state.OFF
+    log("Turn cron state to", state)
+    if (!this.screen.cronStarted) return
+    if ((!this.screen.cronON && !this.screen.cronOFF) || this.screen.cronON) {
+      // and... consider first start
+      this.screen.forceLocked = true
+      if (this.screen.cronON) this.wakeup()
+      this.screen.cronON = true
+      this.screen.cronOFF = false
+      this.lock()
+    } else if (this.screen.cronOFF) {
+      this.screen.forceLocked = false
+      this.screen.cronON = false
+      this.screen.cronOFF = true
+      this.unlock()
+    }
+    this.sendSocketNotification("SCREEN_FORCELOCKED", this.screen.forceLocked)
   }
 }
 

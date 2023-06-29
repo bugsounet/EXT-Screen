@@ -11,6 +11,10 @@ class screenDisplayer {
   prepare() {
     var dom = document.createElement("div")
     dom.id = "EXT-SCREEN"
+    dom.className= "animate__animated"
+
+    var counters = document.createElement("div")
+    counters.id = "EXT-SCREEN_COUNTERS"
 
     if (this.config.displayCounter || this.config.displayBar) {
       /** Screen TimeOut Text **/
@@ -40,9 +44,10 @@ class screenDisplayer {
         screenBar.max= this.config.delay
       }
       bar.appendChild(screenBar)
-      dom.appendChild(screen)
-      dom.appendChild(bar)
+      counters.appendChild(screen)
+      counters.appendChild(bar)
     }
+    dom.appendChild(counters)
 
     if (this.config.displayLastPresence) {
       /** Last user Presence **/
@@ -146,22 +151,37 @@ class screenDisplayer {
   }
 
   /** Hide EXT with Flip animation **/
-  async hideDivWithAnimatedFlip (div) {
+  hideDivWithAnimatedFlip (div) {
     if (!this.config.autoHide) return
     if (this.autoHide) return logScreen("Already Hidden.")
     this.autoHide = true
     var module = document.getElementById(div)
-    await this.screenAnimate(div, "flipOutX")
-    module.classList.add("hidden")
+    module.classList.remove("animate__flipInX")
+    module.classList.add("animate__flipOutX")
+    module.addEventListener('animationend', (e) => {
+      if (e.animationName == "flipOutX") {
+        module.classList.add("hidden")
+      }
+      e.stopPropagation()
+    }, {once: true})
   }
 
-  async showDivWithAnimatedFlip (div) {
+  showDivWithAnimatedFlip (div) {
     if (!this.config.autoHide) return
     if (!this.autoHide) return logScreen("Already Showing.")
     this.autoHide = false
     var module = document.getElementById(div)
-    module.classList.remove("hidden")
-    await this.screenAnimate(div, "flipInX")
+    module.classList.remove("animate__flipOutX", "hidden")
+    module.classList.add("animate__flipInX")
+  }
+
+  /** Hide or show counter **/
+  hideShowCounter(state) {
+    if (this.config.displayCounter || this.config.displayBar) {
+      var counters = document.getElementById("EXT-SCREEN_COUNTERS")
+      if (state) counters.classList.add("hidden")
+      else counters.classList.remove("hidden")
+    }
   }
 
   checkStyle () {
