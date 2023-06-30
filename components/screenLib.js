@@ -40,7 +40,7 @@ class SCREEN {
       availabilityCounter: Math.floor(process.uptime()),
       availabilityPercent: 0,
       availabilityTimeHuman: 0,
-      AvailabilityTimeSec: 0,
+      availabilityTimeSec: 0,
       forceLocked: false,
       cronStarted: false,
       cronON: false,
@@ -98,7 +98,7 @@ class SCREEN {
     }
   }
 
-  activate () {
+  activate() {
     process.on('exit', (code) => {
       if (this.config.mode) this.setPowerDisplay(true)
       this.governor("GOVERNOR_WORKING")
@@ -108,7 +108,7 @@ class SCREEN {
     this.start()
   }
 
-  start (restart) {
+  start(restart) {
     if (this.screen.locked || this.screen.running) return
     if (!restart) log("Start.")
     else log("Restart.")
@@ -148,7 +148,11 @@ class SCREEN {
   forceTurnOffScreen() {
     if (!this.screen.power) return log("forceTurnOffScreen: already off")
     this.sendSocketNotification("SCREEN_HIDING")
-    this.screen.power = false
+    if (this.screen.power) {
+      this.sendSocketNotification("SCREEN_HIDING")
+      this.screen.power = false
+      if (this.config.mode) this.wantedPowerDisplay(false)
+    }
     if (this.config.mode) this.wantedPowerDisplay(false)
     if (this.config.detectorSleeping) this.detector("DETECTOR_STOP")
     this.governor("GOVERNOR_SLEEPING")
@@ -197,12 +201,12 @@ class SCREEN {
 
   unlock() {
     if (this.screen.forceLocked) return log("Unlock: ForceLocked")
-    log("Unlocked !")
     this.screen.locked = false
+    log("Unlocked !")
     this.start()
   }
 
-  forceEnd () {
+  forceEnd() {
     clearInterval(this.interval)
     this.interval = null
     this.screen.running = false
@@ -210,7 +214,7 @@ class SCREEN {
     this.forceTurnOffScreen()
   }
 
-  wantedPowerDisplay (wanted) {
+  wantedPowerDisplay(wanted) {
     var actual = false
     switch (this.config.mode) {
       case 0:
@@ -342,14 +346,14 @@ class SCREEN {
     }
   }
 
-  resultDisplay (actual,wanted) {
+  resultDisplay(actual,wanted) {
     log("Display -- Actual: " + actual + " - Wanted: " + wanted)
     this.screen.power = actual
     if (actual && !wanted) this.setPowerDisplay(false)
     if (!actual && wanted) this.setPowerDisplay(true)
   }
 
-  async setPowerDisplay (set) {
+  async setPowerDisplay(set) {
     log("Display " + (set ? "ON." : "OFF."))
     this.screen.power = set
     this.SendScreenPowerState()
@@ -463,12 +467,13 @@ class SCREEN {
       this.sendSocketNotification("SCREEN_AVAILABILITY", availability)
     }, 1000)
   }
-  
+
+  /** Cron Rules **/
   cronState(state) {
     this.screen.cronStarted= state.started
     this.screen.cronON= state.ON
     this.screen.cronOFF= state.OFF
-    log("Turn cron state to", state)
+    log("[CRON] Turn cron state to", state)
     if (!this.screen.cronStarted) return
     if ((!this.screen.cronON && !this.screen.cronOFF) || this.screen.cronON) {
       // and... consider first start
@@ -486,8 +491,9 @@ class SCREEN {
     this.sendSocketNotification("SCREEN_FORCELOCKED", this.screen.forceLocked)
   }
 
-  GHforceEnd () {
-    if (!this.screen.power) return log("already off")
+  /** Google Home Rules **/
+  GHforceEnd() {
+    if (!this.screen.power) return log("[GH] Screen Already OFF")
     this.screen.forceLocked = true
     this.screen.locked = true
     clearInterval(this.interval)
@@ -495,16 +501,19 @@ class SCREEN {
     this.counter = 0
     this.screen.running = false
     this.forceTurnOffScreen()
-    log("[GH] Locked !")
+    log("[GH] Turn OFF Screen")
   }
 
-  GHforceWakeUp () {
-    if (this.screen.power) return log("already on")
+  GHforceWakeUp() {
+    if (this.screen.power) return log("[GH] Screen Already on")
     this.screen.forceLocked = false
     this.screen.locked = false
     this.wakeup()
-    if (this.screen.cronON) this.lock()
-    log("[GH] UnLocked !")
+    if (this.screen.cronON) {
+      this.lock()
+      this.sendSocketNotification("SCREEN_FORCELOCKED", this.screen.forceLocked)
+    }
+    log("[GH] Turn ON Screen")
   }
 }
 
