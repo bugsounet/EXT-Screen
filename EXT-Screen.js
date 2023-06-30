@@ -223,7 +223,8 @@ Module.register("EXT-Screen", {
         nl: "translations/nl.json",
         pt: "translations/pt.json",
         ko: "translations/ko.json",
-        el: "translations/el.json"
+        el: "translations/el.json",
+        "zh-cn": "translations/zh-cn.json"
       }
     },
 
