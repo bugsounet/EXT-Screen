@@ -148,7 +148,6 @@ class SCREEN {
   forceTurnOffScreen() {
     if (!this.screen.power) return log("forceTurnOffScreen: already off")
     this.sendSocketNotification("SCREEN_HIDING")
-    this.sendSocketNotification("SCREEN_HIDING")
     this.screen.power = false
     if (this.config.mode) this.wantedPowerDisplay(false)
     if (this.config.detectorSleeping) this.detector("DETECTOR_STOP")
