@@ -512,6 +512,7 @@ class SCREEN {
       if (this.screen.cronON) this.sendForceLockState(true)
       this.lock()
     }
+    this.sendSocketNotification("FORCE_LOCK_END")
     log("[GH] Turn ON Display")
   }
 

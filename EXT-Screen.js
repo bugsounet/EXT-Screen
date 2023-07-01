@@ -140,6 +140,9 @@ Module.register("EXT-Screen", {
           this.screenDisplay.hideShowCounter(payload)
           this.isForceLocked = payload ? true : false
           break
+        case "FORCE_LOCK_END":
+          this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
+          break
       }
     },
 
