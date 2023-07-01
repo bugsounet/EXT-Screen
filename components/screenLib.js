@@ -492,7 +492,7 @@ class SCREEN {
 
   /** Force Lock ON/OFF display **/
   forceLockOFF() {
-    if (!this.screen.power) return log("[GH] Display Already OFF")
+    if (!this.screen.power) return log("[Force OFF] Display Already OFF")
     this.sendForceLockState(true)
     this.screen.locked = true
     clearInterval(this.interval)
@@ -500,11 +500,12 @@ class SCREEN {
     if (this.screen.running) this.counter = 0
     this.screen.running = false
     this.forceTurnOffScreen()
-    log("[GH] Turn OFF Display")
+    log("[Force OFF] Turn OFF Display")
   }
 
   forceLockON() {
-    if (this.screen.power && this.screen.cronStarted) return log("[GH] Display Already ON")
+    if (this.screen.locked && !this.screen.forceLocked) return log("[Force ON] Display is Locked!")
+    if (this.screen.power && this.screen.cronStarted) return log("[Force ON] Display Already ON")
     this.sendForceLockState(false)
     this.screen.locked = false
     this.wakeup()
@@ -513,7 +514,7 @@ class SCREEN {
       this.lock()
     }
     this.sendSocketNotification("FORCE_LOCK_END")
-    log("[GH] Turn ON Display")
+    log("[Force ON] Turn ON Display")
   }
 
   sendForceLockState(state) {
