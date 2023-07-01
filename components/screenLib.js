@@ -148,11 +148,8 @@ class SCREEN {
   forceTurnOffScreen() {
     if (!this.screen.power) return log("forceTurnOffScreen: already off")
     this.sendSocketNotification("SCREEN_HIDING")
-    if (this.screen.power) {
-      this.sendSocketNotification("SCREEN_HIDING")
-      this.screen.power = false
-      if (this.config.mode) this.wantedPowerDisplay(false)
-    }
+    this.sendSocketNotification("SCREEN_HIDING")
+    this.screen.power = false
     if (this.config.mode) this.wantedPowerDisplay(false)
     if (this.config.detectorSleeping) this.detector("DETECTOR_STOP")
     this.governor("GOVERNOR_SLEEPING")
@@ -477,43 +474,50 @@ class SCREEN {
     if (!this.screen.cronStarted) return
     if ((!this.screen.cronON && !this.screen.cronOFF) || this.screen.cronON) {
       // and... consider first start
-      this.screen.forceLocked = true
-      if (this.screen.cronON) this.wakeup()
+      this.sendForceLockState(true)
+      if (this.screen.cronON) {
+        this.screen.locked = false
+        this.wakeup()
+      }
       this.screen.cronON = true
       this.screen.cronOFF = false
       this.lock()
     } else if (this.screen.cronOFF) {
-      this.screen.forceLocked = false
+      this.sendForceLockState(false)
       this.screen.cronON = false
       this.screen.cronOFF = true
       this.unlock()
     }
-    this.sendSocketNotification("SCREEN_FORCELOCKED", this.screen.forceLocked)
   }
 
-  /** Google Home Rules **/
-  GHforceEnd() {
-    if (!this.screen.power) return log("[GH] Screen Already OFF")
-    this.screen.forceLocked = true
+  /** Force Lock ON/OFF display **/
+  forceLockOFF() {
+    if (!this.screen.power) return log("[GH] Display Already OFF")
+    this.sendForceLockState(true)
     this.screen.locked = true
     clearInterval(this.interval)
     this.interval = null
-    this.counter = 0
+    if (this.screen.running) this.counter = 0
     this.screen.running = false
     this.forceTurnOffScreen()
-    log("[GH] Turn OFF Screen")
+    log("[GH] Turn OFF Display")
   }
 
-  GHforceWakeUp() {
-    if (this.screen.power) return log("[GH] Screen Already on")
-    this.screen.forceLocked = false
+  forceLockON() {
+    if (this.screen.power && this.screen.cronStarted) return log("[GH] Display Already ON")
+    this.sendForceLockState(false)
     this.screen.locked = false
     this.wakeup()
-    if (this.screen.cronON) {
+    if (this.screen.cronStarted) {
+      if (this.screen.cronON) this.sendForceLockState(true)
       this.lock()
-      this.sendSocketNotification("SCREEN_FORCELOCKED", this.screen.forceLocked)
     }
-    log("[GH] Turn ON Screen")
+    log("[GH] Turn ON Display")
+  }
+
+  sendForceLockState(state) {
+    this.screen.forceLocked = state
+    this.sendSocketNotification("SCREEN_FORCELOCKED", this.screen.forceLocked)
   }
 }
 

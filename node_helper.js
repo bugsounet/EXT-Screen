@@ -31,11 +31,11 @@ module.exports = NodeHelper.create({
       case "UNLOCK":
         this.screen.unlock()
         break
-      case "GH_FORCE_END":
-        this.screen.GHforceEnd()
+      case "LOCK_FORCE_END":
+        this.screen.forceLockOFF()
         break
-      case "GH_FORCE_WAKEUP":
-        this.screen.GHforceWakeUp()
+      case "LOCK_FORCE_WAKEUP":
+        this.screen.forceLockON()
         break
     }
   },

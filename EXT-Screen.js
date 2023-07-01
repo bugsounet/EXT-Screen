@@ -58,6 +58,7 @@ Module.register("EXT-Screen", {
       this.screenDisplay = new screenDisplayer(this)
       this.screenDisplay.checkStyle()
       this.screenTouch = new screenTouch(this)
+      this.isForceLocked = false
       logScreen("is now started!")
     },
 
@@ -137,6 +138,7 @@ Module.register("EXT-Screen", {
           break
         case "SCREEN_FORCELOCKED":
           this.screenDisplay.hideShowCounter(payload)
+          this.isForceLocked = payload ? true : false
           break
       }
     },
@@ -165,9 +167,7 @@ Module.register("EXT-Screen", {
           break
         case "EXT_SCREEN-LOCK":
           this.sendSocketNotification("LOCK")
-          let HiddenLock = true
-          if (payload && payload.show) HiddenLock= false
-          if (HiddenLock) this.screenDisplay.hideDivWithAnimatedFlip("EXT-SCREEN")
+          if (!this.isForceLocked) this.screenDisplay.hideDivWithAnimatedFlip("EXT-SCREEN")
           if (this.ignoreSender.indexOf(sender.name) == -1) {
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenLock", { VALUES: sender.name }),
@@ -177,9 +177,7 @@ Module.register("EXT-Screen", {
           break
         case "EXT_SCREEN-UNLOCK":
           this.sendSocketNotification("UNLOCK")
-          let HiddenUnLock = true
-          if (payload && payload.show) HiddenUnLock= false
-          if (HiddenUnLock) this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
+          if (!this.isForceLocked) this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
           if (this.ignoreSender.indexOf(sender.name) == -1) {
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenUnLock", { VALUES: sender.name }),
@@ -188,10 +186,10 @@ Module.register("EXT-Screen", {
           }
           break
         case "EXT_SCREEN-GH_FORCE_END":
-          this.sendSocketNotification("GH_FORCE_END")
+          this.sendSocketNotification("LOCK_FORCE_END")
           break
         case "EXT_SCREEN-GH_FORCE_WAKEUP":
-          this.sendSocketNotification("GH_FORCE_WAKEUP")
+          this.sendSocketNotification("LOCK_FORCE_WAKEUP")
           break
       }
     },
