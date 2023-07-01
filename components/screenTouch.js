@@ -23,6 +23,7 @@ class screenTouch {
           } else if (this.clickCount === 2) {
             clearTimeout(this.clickTimer)
             this.clickCount = 0
+            that.sendNotification("EXT_STOP")
             that.sendSocketNotification("LOCK_FORCE_END")
           }
         }, false)
@@ -35,7 +36,10 @@ class screenTouch {
 
         window.addEventListener('long-press', () => {
           if (that.hidden) that.sendSocketNotification("LOCK_FORCE_WAKEUP")
-          else that.sendSocketNotification("LOCK_FORCE_END")
+          else {
+            that.sendNotification("EXT_STOP")
+            that.sendSocketNotification("LOCK_FORCE_END")
+          }
         }, false)
         break
       case 3:
@@ -50,6 +54,7 @@ class screenTouch {
           } else if (this.clickCount === 2) {
             clearTimeout(this.clickTimer)
             this.clickCount = 0
+            that.sendNotification("EXT_STOP")
             that.sendSocketNotification("LOCK_FORCE_END")
           }
         }, false)
