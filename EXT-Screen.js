@@ -44,7 +44,6 @@ Module.register("EXT-Screen", {
       this.ignoreSender= [
         "Gateway",
         "EXT-Pir",
-        "EXT-ScreenManager",
         "EXT-Screen",
         "EXT-Motion",
         "EXT-Keyboard",
@@ -59,7 +58,6 @@ Module.register("EXT-Screen", {
       this.screenDisplay.checkStyle()
       this.screenTouch = new screenTouch(this)
       this.isForceLocked = false
-      logScreen("is now started!")
     },
 
     socketNotificationReceived: function (notification, payload) {
@@ -103,14 +101,12 @@ Module.register("EXT-Screen", {
           break
         case "SCREEN_POWER":
           if (payload) {
-            this.sendNotification("EXT_SCREEN-ON")
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenPowerOn"),
               type: "information",
               sound: this.config.sound ? "modules/EXT-Screen/sounds/open.mp3" : null
             })
           } else {
-            this.sendNotification("EXT_SCREEN-OFF")
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenPowerOff"),
               type: "information",
@@ -123,6 +119,9 @@ Module.register("EXT-Screen", {
             let availability= document.getElementById("EXT-SCREEN_AVAILABILITY_DATA")
             availability.textContent= payload.availability + " (" + payload.availabilityPercent + "%)"
           }
+          break
+        case "SCREEN_POWERSTATUS":
+          this.sendNotification("EXT_SCREEN-POWER", payload)
           break
         case "GOVERNOR_SLEEPING":
           this.sendNotification("EXT_GOVERNOR-SLEEPING")

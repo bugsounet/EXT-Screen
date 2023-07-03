@@ -47,6 +47,8 @@ class SCREEN {
       cronOFF: false
     }
 
+    this.status = false
+
     switch (this.config.mode) {
       case 0:
         console.log("[SCREEN] Mode 0: Disabled")
@@ -96,6 +98,8 @@ class SCREEN {
       }
       this.screenAvailability()
     }
+
+    this.screenStatus()
   }
 
   activate() {
@@ -519,6 +523,17 @@ class SCREEN {
   sendForceLockState(state) {
     this.screen.forceLocked = state
     this.sendSocketNotification("SCREEN_FORCELOCKED", this.screen.forceLocked)
+  }
+
+  screenStatus() {
+    setInterval(() => {
+      let status = this.screen.power
+      if (status !== this.status) {
+        this.sendSocketNotification("SCREEN_POWERSTATUS", status)
+        log("[POWER] Display from", this.status, "--->", status)
+      }
+      this.status = status
+    }, 1000)
   }
 }
 
