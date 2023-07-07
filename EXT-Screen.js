@@ -1,13 +1,13 @@
-/*******************
-*  EXT-Screen v1.3 *
-*  Bugsounet       *
-*  03/2023         *
-*******************/
+/**************
+*  EXT-Screen *
+*  Bugsounet  *
+*  07/2023    *
+**************/
 
 var logScreen = (...args) => { /* do nothing */ }
 
 Module.register("EXT-Screen", {
-    requiresVersion: "2.23.0",
+    requiresVersion: "2.24.0",
     defaults: {
       debug: false,
       animateBody: true,
@@ -187,10 +187,10 @@ Module.register("EXT-Screen", {
             })
           }
           break
-        case "EXT_SCREEN-GH_FORCE_END":
+        case "EXT_SCREEN-FORCE_END":
           this.sendSocketNotification("LOCK_FORCE_END")
           break
-        case "EXT_SCREEN-GH_FORCE_WAKEUP":
+        case "EXT_SCREEN-FORCE_WAKEUP":
           this.sendSocketNotification("LOCK_FORCE_WAKEUP")
           break
       }
