@@ -38,14 +38,15 @@ if [ "$EUID" -eq 0 ]; then
   exit 1
 fi
 
-Installer_info "Updating..."
+# !! to delete on next release !!
+rm -f package-lock.json
 
+Installer_info "Updating..."
 (git reset --hard && git pull) || {
-  echo
-  Installer_error "Update error"
-  echo
-  exit 1
+  Installer_error "Update Failed!"
+  exit 255
 }
+Installer_success "Done"
 
 echo
 Installer_info "Ready for Installing..."
