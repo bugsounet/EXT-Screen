@@ -27,40 +27,26 @@ Installer_version="$(grep -Eo '\"version\"[^,]*' ./package.json | grep -Eo '[^:]
 Installer_module="$(grep -Eo '\"name\"[^,]*' ./package.json | grep -Eo '[^:]*$' | awk  -F'\"' '{print $2}')"
 
 # Let's start !
-Installer_info "Welcome to $Installer_module v$Installer_version"
+Installer_info "Welcome to $Installer_module v$Installer_version updater"
 
 echo
 
 # Check not run as root
 if [ "$EUID" -eq 0 ]; then
   Installer_error "npm install must not be used as root"
+  echo
   exit 1
 fi
 
-# Check platform compatibility
-Installer_info "Checking OS..."
-Installer_checkOS
-if  [ "$platform" == "osx" ]; then
-  Installer_error "OS Detected: $OSTYPE ($os_name $os_version $arch)"
-  Installer_error "This module is not compatible with your system"
-  exit 0
-else
-  Installer_success "OS Detected: $OSTYPE ($os_name $os_version $arch)"
-fi
-
-echo
-
-# deleting package.json because npm install add/update package
+# !! to delete on next release !!
 rm -f package-lock.json
 
 Installer_info "Updating..."
-
-git reset --hard HEAD
-git pull
-
-echo
-Installer_info "Deleting ALL @bugsounet libraries..."
-rm -rf node_modules/@bugsounet
+(git reset --hard && git pull) || {
+  Installer_error "Update Failed!"
+  exit 255
+}
+Installer_success "Done"
 
 echo
 Installer_info "Ready for Installing..."

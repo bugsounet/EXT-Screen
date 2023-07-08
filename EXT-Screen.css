@@ -5,26 +5,26 @@
   line-height: 99%; 
 }
 
-#EXT-SCREEN.hidden {
-  display: none;
-}
-
 #EXT-SCREEN_TEXT {
   margin-right: 10px;
 }
 
+#EXT-SCREEN_AVAILABILITY,
 #EXT-SCREEN_PRESENCE,
 #EXT-SCREEN_SCREEN {
   font-size: large;
   display: flex;
 }
 
+#EXT-SCREEN.hidden,
+#EXT-SCREEN_COUNTERS.hidden,
 #EXT-SCREEN_PRESENCE.hidden,
 #EXT-SCREEN_BAR.hidden,
 #EXT-SCREEN_SCREEN.hidden {
   display: none;
 }
 
+#EXT-SCREEN_AVAILABILITY_TEXT,
 #EXT-SCREEN_PRESENCE_TEXT,
 #EXT-SCREEN_SCREEN_TEXT {
   margin-right: 10px;

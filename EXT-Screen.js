@@ -1,40 +1,50 @@
-/*******************
-*  EXT-Screen v1.3 *
-*  Bugsounet       *
-*  03/2023         *
-*******************/
+/**************
+*  EXT-Screen *
+*  Bugsounet  *
+*  07/2023    *
+**************/
 
 var logScreen = (...args) => { /* do nothing */ }
 
 Module.register("EXT-Screen", {
-    requiresVersion: "2.22.0",
+    requiresVersion: "2.24.0",
     defaults: {
       debug: false,
       animateBody: true,
-      animateTime: 3000,
       delay: 2 * 60 * 1000,
-      turnOffDisplay: true,
       mode: 1,
-      ecoMode: true,
       displayCounter: true,
       displayBar: true,
       displayStyle: "Text",
       displayLastPresence: true,
       lastPresenceTimeFormat: "LL H:mm",
-      autoHide: true,
-      delayed: 0,
+      displayAvailability: true,
       detectorSleeping: false,
       gpio: 20,
       clearGpioValue: true,
-      sound: false
+      sound: false,
+      touchMode: 3,
+      ON: [
+      //  {
+      //    dayOfWeek: [0],
+      //    hour: 7,
+      //    minute: 45
+      //  }
+      ],
+      OFF: [
+      //  {
+      //    dayOfWeek: [1],
+      //    hour: 17,
+      //    minute: 00
+      //  }
+      ]
     },
 
     start: function () {
       this.ignoreSender= [
         "Gateway",
         "EXT-Pir",
-        "EXT-ScreenManager",
-        "EXT-ScreenTouch",
+        "EXT-Screen",
         "EXT-Motion",
         "EXT-Keyboard",
         "EXT-StreamDeck"
@@ -46,13 +56,15 @@ Module.register("EXT-Screen", {
       this.ready = false
       this.screenDisplay = new screenDisplayer(this)
       this.screenDisplay.checkStyle()
-      logScreen("is now started!")
+      this.screenTouch = new screenTouch(this)
+      this.isForceLocked = false
     },
 
     socketNotificationReceived: function (notification, payload) {
       switch(notification) {
         case "INITIALIZED":
           this.sendNotification("EXT_HELLO", this.name)
+          this.screenTouch.touch(this)
           this.ready = true
           break
         case "SCREEN_SHOWING":
@@ -89,20 +101,27 @@ Module.register("EXT-Screen", {
           break
         case "SCREEN_POWER":
           if (payload) {
-            this.sendNotification("EXT_SCREEN-ON")
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenPowerOn"),
               type: "information",
               sound: this.config.sound ? "modules/EXT-Screen/sounds/open.mp3" : null
             })
           } else {
-            this.sendNotification("EXT_SCREEN-OFF")
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenPowerOff"),
               type: "information",
               sound: this.config.sound ? "modules/EXT-Screen/sounds/close.mp3" : null
             })
           }
+          break
+        case "SCREEN_AVAILABILITY":
+          if (this.config.displayAvailability) {
+            let availability= document.getElementById("EXT-SCREEN_AVAILABILITY_DATA")
+            availability.textContent= payload.availability + " (" + payload.availabilityPercent + "%)"
+          }
+          break
+        case "SCREEN_POWERSTATUS":
+          this.sendNotification("EXT_SCREEN-POWER", payload)
           break
         case "GOVERNOR_SLEEPING":
           this.sendNotification("EXT_GOVERNOR-SLEEPING")
@@ -115,6 +134,13 @@ Module.register("EXT-Screen", {
           break
         case "DETECTOR_STOP":
           this.sendNotification("EXT_DETECTOR-STOP")
+          break
+        case "SCREEN_FORCELOCKED":
+          this.screenDisplay.hideShowCounter(payload)
+          this.isForceLocked = payload ? true : false
+          break
+        case "FORCE_LOCK_END":
+          this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
           break
       }
     },
@@ -143,9 +169,7 @@ Module.register("EXT-Screen", {
           break
         case "EXT_SCREEN-LOCK":
           this.sendSocketNotification("LOCK")
-          let HiddenLock = true
-          if (payload && payload.show) HiddenLock= false
-          if (HiddenLock) this.screenDisplay.hideDivWithAnimatedFlip("EXT-SCREEN")
+          if (!this.isForceLocked) this.screenDisplay.hideDivWithAnimatedFlip("EXT-SCREEN")
           if (this.ignoreSender.indexOf(sender.name) == -1) {
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenLock", { VALUES: sender.name }),
@@ -153,21 +177,9 @@ Module.register("EXT-Screen", {
             })
           }
           break
-        case "EXT_SCREEN-FORCE_LOCK":
-          this.sendSocketNotification("FORCELOCK")
-          this.screenDisplay.hideDivWithAnimatedFlip("EXT-SCREEN")
-          if (this.ignoreSender.indexOf(sender.name) == -1) {
-            this.sendNotification("EXT_ALERT", {
-              message: this.translate("ScreenLock", { VALUES: sender.name }),
-              type: "information",
-            })
-          }
-          break
         case "EXT_SCREEN-UNLOCK":
           this.sendSocketNotification("UNLOCK")
-          let HiddenUnLock = true
-          if (payload && payload.show) HiddenUnLock= false
-          if (HiddenUnLock) this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
+          if (!this.isForceLocked) this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
           if (this.ignoreSender.indexOf(sender.name) == -1) {
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenUnLock", { VALUES: sender.name }),
@@ -175,21 +187,11 @@ Module.register("EXT-Screen", {
             })
           }
           break
-        case "EXT_SCREEN-FORCE_UNLOCK":
-          this.sendSocketNotification("FORCEUNLOCK")
-          this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
-          if (this.ignoreSender.indexOf(sender.name) == -1) {
-            this.sendNotification("EXT_ALERT", {
-              message: this.translate("ScreenUnLock", { VALUES: sender.name }),
-              type: "information",
-            })
-          }
+        case "EXT_SCREEN-FORCE_END":
+          this.sendSocketNotification("LOCK_FORCE_END")
           break
-        case "EXT_SCREEN-GH_FORCE_END":
-          this.sendSocketNotification("GH_FORCE_END")
-          break
-        case "EXT_SCREEN-GH_FORCE_WAKEUP":
-          this.sendSocketNotification("GH_FORCE_WAKEUP")
+        case "EXT_SCREEN-FORCE_WAKEUP":
+          this.sendSocketNotification("LOCK_FORCE_WAKEUP")
           break
       }
     },
@@ -205,7 +207,9 @@ Module.register("EXT-Screen", {
     getScripts: function () {
       return [
         "/modules/EXT-Screen/components/progressbar.js",
-        "/modules/EXT-Screen/components/screenDisplayer.js"
+        "/modules/EXT-Screen/components/long-press-event.js",
+        "/modules/EXT-Screen/components/screenDisplayer.js",
+        "/modules/EXT-Screen/components/screenTouch.js"
       ]
     },
 
@@ -219,7 +223,8 @@ Module.register("EXT-Screen", {
         nl: "translations/nl.json",
         pt: "translations/pt.json",
         ko: "translations/ko.json",
-        el: "translations/el.json"
+        el: "translations/el.json",
+        "zh-cn": "translations/zh-cn.json"
       }
     },
 
