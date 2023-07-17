@@ -132,7 +132,7 @@ Installer_success "Done"
 echo
 
 # the end...
-Installer_warning "Support is now moved in a dedicated Server: http://forum.bugsounet.fr"
+Installer_warning "Support is now moved in a dedicated Server: https://forum.bugsounet.fr"
 Installer_warning "@bugsounet"
 echo
 Installer_success "$Installer_module is now installed !"
