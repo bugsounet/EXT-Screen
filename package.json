@@ -34,7 +34,7 @@
   "dependencies": {
     "cron-parser": "^4.8.1",
     "glob": "^10.3.3",
-    "minify": "^9.2.0",
+    "minify": "^10.3.0",
     "node-cron": "^3.0.2"
   }
 }
