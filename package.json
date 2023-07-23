@@ -6,7 +6,7 @@
   "main": "EXT-Screen.js",
   "scripts": {
     "preinstall": "installer/preinstall.sh -d 'unclutter cec-utils ddcutil'",
-    "postinstall": "installer/postinstall.sh -m",
+    "postinstall": "installer/postinstall.sh -m -b",
     "update": "installer/update.sh",
     "reset": "git reset --hard",
     "clean": "rm -rf node_modules package-lock.json"
