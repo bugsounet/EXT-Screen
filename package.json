@@ -1,12 +1,12 @@
 {
   "name": "EXT-Screen",
-  "version": "2.0.0",
-  "rev": "230701",
+  "version": "2.0.1",
+  "rev": "230720",
   "description": "GA EXT Screen manager",
   "main": "EXT-Screen.js",
   "scripts": {
-    "preinstall": "installer/preinstall.sh",
-    "postinstall": "installer/postinstall.sh",
+    "preinstall": "installer/preinstall.sh -d 'unclutter cec-utils ddcutil'",
+    "postinstall": "installer/postinstall.sh -m -b",
     "update": "installer/update.sh",
     "reset": "git reset --hard",
     "clean": "rm -rf node_modules package-lock.json"
@@ -33,8 +33,8 @@
   "homepage": "https://wiki.bugsounet.fr/en/EXT-Screen",
   "dependencies": {
     "cron-parser": "^4.8.1",
-    "glob": "^10.3.1",
-    "minify": "^9.2.0",
+    "esbuild": "^0.18.16",
+    "glob": "^10.3.3",
     "node-cron": "^3.0.2"
   }
 }

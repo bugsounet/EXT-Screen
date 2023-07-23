@@ -3,6 +3,15 @@
 # | npm preinstall |
 # +----------------+
 
+dependencies=
+
+while getopts ":d:" option; do
+  case $option in
+    d) # -d option for install dependencies
+       dependencies=($OPTARG);;
+  esac
+done
+
 # get the installer directory
 Installer_get_current_dir () {
   SOURCE="${BASH_SOURCE[0]}"
@@ -23,6 +32,7 @@ source utils.sh
 # Go back to module root
 cd ..
 
+echo
 # check version in package.json file
 Installer_version="$(grep -Eo '\"version\"[^,]*' ./package.json | grep -Eo '[^:]*$' | awk  -F'\"' '{print $2}')"
 Installer_module="$(grep -Eo '\"name\"[^,]*' ./package.json | grep -Eo '[^:]*$' | awk  -F'\"' '{print $2}')"
@@ -63,18 +73,9 @@ else
 fi
 
 echo
-# check dependencies
-dependencies=(unclutter cec-utils ddcutil)
-Installer_info "Checking all dependencies..."
-Installer_update_dependencies
-Installer_success "All Dependencies needed are installed !"
-
-echo
-# apply @sdetweil fix
-Installer_info "Installing @sdetweil sandbox fix..."
-bash -c "$(curl -sL https://raw.githubusercontent.com/sdetweil/MagicMirror_scripts/master/fixsandbox)"
-
-echo
-Installer_info "Installing all npm libraries..."
-
-
+#check dependencies
+if [[ -n $dependencies ]]; then
+  Installer_info "Checking all dependencies..."
+  Installer_update_dependencies || exit 255
+  Installer_success "All Dependencies needed are installed !"
+fi
