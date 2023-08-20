@@ -219,4 +219,11 @@ class screenDisplayer {
       node.addEventListener('animationend', handleAnimationEnd, {once: true})
     })
   }
+
+  opacityRegions(dimmer) {
+    var regions = document.querySelectorAll(".region")
+    regions.forEach(region => {
+      region.style.opacity = dimmer
+    })
+  }
 }
