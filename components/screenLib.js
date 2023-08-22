@@ -48,6 +48,7 @@ class SCREEN {
     }
 
     this.status = false
+    this.dimmerFrom = this.config.delay / 3
 
     switch (this.config.mode) {
       case 0:
@@ -125,6 +126,9 @@ class SCREEN {
       this.sendSocketNotification("SCREEN_SHOWING")
       this.screen.power = true
     }
+    if (this.config.autoDimmer) {
+      this.sendSocketNotification("SCREEN_DIMMER", 1)
+    }
     clearInterval(this.interval)
     this.interval = null
     this.counter = this.config.delay
@@ -137,6 +141,12 @@ class SCREEN {
       }
       if (this.config.displayBar) {
         this.sendSocketNotification("SCREEN_BAR", this.config.delay - this.counter )
+      }
+      if (this.config.autoDimmer) {
+        if (this.counter <= this.dimmerFrom) {
+          let dimmer = (100 - (((this.dimmerFrom - this.counter) * 100) / this.dimmerFrom))/100
+          this.sendSocketNotification("SCREEN_DIMMER", dimmer.toFixed(1))
+        }
       }
       if (this.counter <= 0) {
         clearInterval(this.interval)
@@ -155,6 +165,7 @@ class SCREEN {
     this.screen.power = false
     if (this.config.mode) this.wantedPowerDisplay(false)
     if (this.config.detectorSleeping) this.detector("DETECTOR_STOP")
+    if (this.config.autoDimmer) this.sendSocketNotification("SCREEN_DIMMER", 0)
     this.governor("GOVERNOR_SLEEPING")
     this.sendSocketNotification("SCREEN_PRESENCE", false)
   }

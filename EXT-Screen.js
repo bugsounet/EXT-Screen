@@ -11,6 +11,7 @@ Module.register("EXT-Screen", {
     defaults: {
       debug: false,
       animateBody: true,
+      autoDimmer: true,
       delay: 2 * 60 * 1000,
       mode: 1,
       displayCounter: true,
@@ -141,6 +142,9 @@ Module.register("EXT-Screen", {
           break
         case "FORCE_LOCK_END":
           this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
+          break
+        case "SCREEN_DIMMER":
+          this.screenDisplay.opacityRegions(payload)
           break
       }
     },
