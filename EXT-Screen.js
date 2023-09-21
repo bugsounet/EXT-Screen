@@ -141,7 +141,7 @@ Module.register("EXT-Screen", {
           this.isForceLocked = payload ? true : false
           break
         case "FORCE_LOCK_END":
-          this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
+          this.screenDisplay.showEXT()
           break
         case "SCREEN_DIMMER":
           this.screenDisplay.opacityRegions(payload)
