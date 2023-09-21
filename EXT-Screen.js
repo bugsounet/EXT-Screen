@@ -1,13 +1,13 @@
 /**************
 *  EXT-Screen *
 *  Bugsounet  *
-*  07/2023    *
+*  09/2023    *
 **************/
 
 var logScreen = (...args) => { /* do nothing */ }
 
 Module.register("EXT-Screen", {
-    requiresVersion: "2.24.0",
+    requiresVersion: "2.25.0",
     defaults: {
       debug: false,
       animateBody: true,
@@ -173,7 +173,7 @@ Module.register("EXT-Screen", {
           break
         case "EXT_SCREEN-LOCK":
           this.sendSocketNotification("LOCK")
-          if (!this.isForceLocked) this.screenDisplay.hideDivWithAnimatedFlip("EXT-SCREEN")
+          if (!this.isForceLocked) this.screenDisplay.hideEXT()
           if (this.ignoreSender.indexOf(sender.name) == -1) {
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenLock", { VALUES: sender.name }),
@@ -183,7 +183,7 @@ Module.register("EXT-Screen", {
           break
         case "EXT_SCREEN-UNLOCK":
           this.sendSocketNotification("UNLOCK")
-          if (!this.isForceLocked) this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
+          if (!this.isForceLocked) this.screenDisplay.showEXT()
           if (this.ignoreSender.indexOf(sender.name) == -1) {
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenUnLock", { VALUES: sender.name }),

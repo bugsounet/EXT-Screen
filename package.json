@@ -1,7 +1,7 @@
 {
   "name": "EXT-Screen",
-  "version": "2.1.0",
-  "rev": "230820",
+  "version": "2.2.0",
+  "rev": "230921",
   "description": "GA EXT Screen manager",
   "main": "EXT-Screen.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "GoogleAssistant"
   ],
   "engines": {
-    "node": ">=16.14.0"
+    "node": ">=18"
   },
   "repository": {
     "type": "git",
