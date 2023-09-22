@@ -63,7 +63,7 @@ class screenTouch {
           if (that.hidden) {
             clearTimeout(this.clickTimer)
             this.clickCount = 0
-            this.sendSocketNotification("LOCK_FORCE_WAKEUP")
+            that.sendSocketNotification("LOCK_FORCE_WAKEUP")
           }
         }, false)
         break
