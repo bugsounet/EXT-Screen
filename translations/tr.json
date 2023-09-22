@@ -1,0 +1,9 @@
+{
+  "ScreenWakeUp": "Ekran Uyandırma: {VALUES}",
+  "ScreenLock": "Ekran Kilidi {VALUES}",
+  "ScreenUnLock": "Ekran Kilidini Açma ölçütü {VALUES}",
+  "ScreenTurnOff": "Otomatik Kapatma Ekranı:",
+  "ScreenLastPresence": "Son Durum:",
+  "ScreenPowerOn": "Ekranı aç",
+  "ScreenPowerOff": "Ekranı kapat"
+}
