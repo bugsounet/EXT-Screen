@@ -11,7 +11,7 @@ Module.register("EXT-Screen", {
     defaults: {
       debug: false,
       animateBody: true,
-      autoDimmer: true,
+      autoDimmer: false,
       delay: 2 * 60 * 1000,
       mode: 1,
       displayCounter: true,
