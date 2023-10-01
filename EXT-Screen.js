@@ -1,17 +1,17 @@
 /**************
 *  EXT-Screen *
 *  Bugsounet  *
-*  07/2023    *
+*  09/2023    *
 **************/
 
 var logScreen = (...args) => { /* do nothing */ }
 
 Module.register("EXT-Screen", {
-    requiresVersion: "2.24.0",
+    requiresVersion: "2.25.0",
     defaults: {
       debug: false,
       animateBody: true,
-      autoDimmer: true,
+      autoDimmer: false,
       delay: 2 * 60 * 1000,
       mode: 1,
       displayCounter: true,
@@ -141,7 +141,7 @@ Module.register("EXT-Screen", {
           this.isForceLocked = payload ? true : false
           break
         case "FORCE_LOCK_END":
-          this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
+          this.screenDisplay.showEXT()
           break
         case "SCREEN_DIMMER":
           this.screenDisplay.opacityRegions(payload)
@@ -173,7 +173,7 @@ Module.register("EXT-Screen", {
           break
         case "EXT_SCREEN-LOCK":
           this.sendSocketNotification("LOCK")
-          if (!this.isForceLocked) this.screenDisplay.hideDivWithAnimatedFlip("EXT-SCREEN")
+          if (!this.isForceLocked) this.screenDisplay.hideEXT()
           if (this.ignoreSender.indexOf(sender.name) == -1) {
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenLock", { VALUES: sender.name }),
@@ -183,7 +183,7 @@ Module.register("EXT-Screen", {
           break
         case "EXT_SCREEN-UNLOCK":
           this.sendSocketNotification("UNLOCK")
-          if (!this.isForceLocked) this.screenDisplay.showDivWithAnimatedFlip("EXT-SCREEN")
+          if (!this.isForceLocked) this.screenDisplay.showEXT()
           if (this.ignoreSender.indexOf(sender.name) == -1) {
             this.sendNotification("EXT_ALERT", {
               message: this.translate("ScreenUnLock", { VALUES: sender.name }),
@@ -228,7 +228,8 @@ Module.register("EXT-Screen", {
         pt: "translations/pt.json",
         ko: "translations/ko.json",
         el: "translations/el.json",
-        "zh-cn": "translations/zh-cn.json"
+        "zh-cn": "translations/zh-cn.json",
+        tr: "translations/tr.json"
       }
     },
 
