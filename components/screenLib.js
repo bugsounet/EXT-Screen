@@ -78,6 +78,9 @@ class SCREEN {
       case 8:
         console.log("[SCREEN] Mode 8: ddcutil")
         break
+      case 9:
+        console.log("[SCREEN] Mode 9: xrandr (primary display)")
+        break
       default:
         this.logError("Unknow Mode Set to 0 (Disabled)")
         this.sendSocketNotification("ERROR", "[SCREEN] Unknow Mode (" + this.config.mode + ") Set to 0 (Disabled)")
@@ -354,17 +357,44 @@ class SCREEN {
           }
         })
         break
+      case 9:
+    /** xrandr on primary display **/
+        exec("xrandr -d :0  | grep 'connected primary'",
+            (err, stdout, stderr)=> {
+                if (err) {
+                    this.logError(err)
+                    this.sendSocketNotification("ERROR", "[SCREEN] xrandr command error (mode: " + this.config.mode + ")")             
+                }
+                else {
+                    let responseSh = stdout.trim()
+                    var displaySh = "on"
+                    if (responseSh.split(" ")[3] == "(normal") displaySh = "off"
+                    log(displaySh)
+                    var displayRot = responseSh.split("(")[0].trim().split(" ").pop()
+                    if (typeof displayRotation == 'undefined') var displayRotation = "normal"
+                    var hdmiPort = Number(responseSh.substr(5, 1))
+                    log(hdmiPort)
+                    if (displaySh == "on") {
+                      actual = true
+                      if (displayRot == "left" || "right" || "inverted") displayRotation = displayRot
+                      log(displayRotation)
+                    }
+                    this.resultDisplay(actual,wanted,hdmiPort)
+                }
+            }
+        )
+        break
     }
   }
 
-  resultDisplay(actual,wanted) {
+  resultDisplay(actual,wanted,hdmiPort) {
     log("Display -- Actual: " + actual + " - Wanted: " + wanted)
     this.screen.power = actual
-    if (actual && !wanted) this.setPowerDisplay(false)
-    if (!actual && wanted) this.setPowerDisplay(true)
-  }
+    if (actual && !wanted) this.setPowerDisplay(false,hdmiPort)
+    if (!actual && wanted) this.setPowerDisplay(true,hdmiPort)
+ }
 
-  async setPowerDisplay(set) {
+  async setPowerDisplay(set,hdmiPort) {
     log("Display " + (set ? "ON." : "OFF."))
     this.screen.power = set
     this.SendScreenPowerState()
@@ -441,6 +471,10 @@ class SCREEN {
       case 8:
         if (set) exec("ddcutil setvcp d6 1")
         else exec("ddcutil setvcp d6 4")
+        break
+      case 9:
+        if (set) exec("xrandr -d :0 --output HDMI-"+hdmiPort+" --auto --rotate left")
+        else exec("xrandr -d :0 --output HDMI-"+hdmiPort+" --off")
         break
     }
   }
