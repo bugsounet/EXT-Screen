@@ -477,8 +477,8 @@ class SCREEN {
         else exec("ddcutil setvcp d6 4")
         break
       case 9:
-        if (set) exec(`xrandr -d :0 --output HDMI-${this.screen.hdmiPort} --auto --rotate ${this.screen.xrandrRotation}`)
-        else exec(`xrandr -d :0 --output HDMI-${this.screen.hdmiPort} --off`)
+        if (set) exec(`xrandr --output HDMI-${this.screen.hdmiPort} --auto --rotate ${this.screen.xrandrRotation}`)
+        else exec(`xrandr --output HDMI-${this.screen.hdmiPort} --off`)
         break
     }
   }
