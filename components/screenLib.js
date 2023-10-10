@@ -323,7 +323,7 @@ class SCREEN {
         break
       case 6:
       /** python script **/
-        exec("python monitor.py -s -g="+this.config.gpio, { cwd: this.PathScript }, (err, stdout, stderr)=> {
+        exec(`python monitor.py -s -g=${this.config.gpio}`, { cwd: this.PathScript }, (err, stdout, stderr)=> {
           if (err) {
             this.logError("[Display Error] " + err)
             this.sendSocketNotification("ERROR", `[SCREEN] python relay script error (mode: ${this.config.mode})`)
@@ -338,14 +338,14 @@ class SCREEN {
         break
       case 7:
       /** python script reverse**/
-        exec("python monitor.py -s -g="+this.config.gpio, { cwd: this.PathScript }, (err, stdout, stderr)=> {
+        exec(`python monitor.py -s -g=${this.config.gpio}`, { cwd: this.PathScript }, (err, stdout, stderr)=> {
           if (err) {
             this.logError("[Display Error] " + err)
             this.sendSocketNotification("ERROR", `[SCREEN] python relay script error (mode: ${this.config.mode})`)
           }
           else {
             let responsePy = stdout.trim()
-            log("Response PY -- Check State (reverse): " + responsePy)
+            log(`Response PY -- Check State (reverse): ${responsePy}`)
             if (responsePy == 0) actual = true
             this.resultDisplay(actual,wanted)
           }
@@ -370,7 +370,7 @@ class SCREEN {
         break
       case 9:
       /** xrandr on primary display **/
-        exec("xrandr -d :0 | grep 'connected primary'",
+        exec("xrandr | grep 'connected primary'",
             (err, stdout, stderr)=> {
                 if (err) {
                     this.logError(err)
@@ -379,10 +379,10 @@ class SCREEN {
                 else {
                     let responseSh = stdout.trim()
                     var power = "on"
-                    this.screen.hdmiPort = Number(responseSh.substr(5, 1))
+                    this.screen.hdmiPort = responseSh.split(" ")[0]
                     if (responseSh.split(" ")[3] == "(normal") power = "off"
                     if (power == "on") actual = true
-                    log(`Monitor HDMI-${this.screen.hdmiPort} is ${power}`)
+                    log(`[MODE 9] Monitor on ${this.screen.hdmiPort} is ${power}`)
                     this.resultDisplay(actual,wanted)
                 }
             }
@@ -427,20 +427,20 @@ class SCREEN {
         break
       case 6:
         if (set)
-          exec("python monitor.py -r=1 -g="+this.config.gpio, { cwd: this.PathScript }, (err, stdout, stderr)=> {
+          exec(`python monitor.py -r=1 -g=${this.config.gpio}`, { cwd: this.PathScript }, (err, stdout, stderr)=> {
             if (err) console.log("[SCREEN] err:", err)
             else log("Relay is " + stdout.trim())
           })
         else
           if (this.config.clearGpioValue) {
-            exec("python monitor.py -r=0 -c -g="+this.config.gpio, {cwd: this.PathScript},(err, stdout, stderr)=> {
+            exec(`python monitor.py -r=0 -c -g=${this.config.gpio}`, {cwd: this.PathScript},(err, stdout, stderr)=> {
               if (err) console.log("[SCREEN] err:", err)
               else {
                 log("Relay is " + stdout.trim())
               }
             })
           } else {
-            exec("python monitor.py -r=0 -g="+this.config.gpio, {cwd: this.PathScript},(err, stdout, stderr)=> {
+            exec(`python monitor.py -r=0 -g=${this.config.gpio}`, {cwd: this.PathScript},(err, stdout, stderr)=> {
               if (err) console.log("[SCREEN] err:", err)
               else {
                 log("Relay is " + stdout.trim())
@@ -451,14 +451,14 @@ class SCREEN {
       case 7:
         if (set) {
           if (this.config.clearGpioValue) {
-            exec("python monitor.py -r=0 -c -g="+this.config.gpio, {cwd: this.PathScript},(err, stdout, stderr)=> {
+            exec(`python monitor.py -r=0 -c -g=${this.config.gpio}`, {cwd: this.PathScript},(err, stdout, stderr)=> {
               if (err) console.log("[SCREEN] err:", err)
               else {
                 log("Relay is " + stdout.trim())
               }
             })
           } else {
-            exec("python monitor.py -r=0 -g="+this.config.gpio, {cwd: this.PathScript},(err, stdout, stderr)=> {
+            exec(`python monitor.py -r=0 -g=${this.config.gpio}`, {cwd: this.PathScript},(err, stdout, stderr)=> {
               if (err) console.log("[SCREEN] err:", err)
               else {
                 log("Relay is " + stdout.trim())
@@ -466,7 +466,7 @@ class SCREEN {
             })
           }
         } else {
-          exec("python monitor.py -r=1 -g="+this.config.gpio, { cwd: this.PathScript }, (err, stdout, stderr)=> {
+          exec(`python monitor.py -r=1 -g=${this.config.gpio}`, { cwd: this.PathScript }, (err, stdout, stderr)=> {
             if (err) console.log("[SCREEN] err:", err)
             else log("Relay is " + stdout.trim())
           })
@@ -477,8 +477,8 @@ class SCREEN {
         else exec("ddcutil setvcp d6 4")
         break
       case 9:
-        if (set) exec(`xrandr --output HDMI-${this.screen.hdmiPort} --auto --rotate ${this.screen.xrandrRotation}`)
-        else exec(`xrandr --output HDMI-${this.screen.hdmiPort} --off`)
+        if (set) exec(`xrandr --output ${this.screen.hdmiPort} --auto --rotate ${this.screen.xrandrRotation}`)
+        else exec(`xrandr --output ${this.screen.hdmiPort} --off`)
         break
     }
   }
