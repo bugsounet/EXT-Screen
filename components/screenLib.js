@@ -51,7 +51,7 @@ class SCREEN {
     }
 
     this.status = false
-    this.dimmerFrom = this.config.delay / 3
+    this.dimmerFrom = this.config.delay / 4
 
     this.xrandrRoation = [ "normal", "left", "right", "inverted" ]
 
