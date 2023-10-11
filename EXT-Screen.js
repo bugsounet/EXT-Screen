@@ -14,6 +14,7 @@ Module.register("EXT-Screen", {
       autoDimmer: false,
       delay: 2 * 60 * 1000,
       mode: 1,
+      xrandrForceRotation: "normal",
       displayCounter: true,
       displayBar: true,
       displayStyle: "Text",
