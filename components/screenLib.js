@@ -25,7 +25,8 @@ class SCREEN {
       detectorSleeping: false,
       mode: 1,
       gpio: 20,
-      clearGpioValue: true
+      clearGpioValue: true,
+      xrandrForceRotation: "normal"
     }
     this.config = Object.assign(this.default, this.config)
     this.screen = {
@@ -44,11 +45,15 @@ class SCREEN {
       forceLocked: false,
       cronStarted: false,
       cronON: false,
-      cronOFF: false
+      cronOFF: false,
+      xrandrRotation: null,
+      hdmiPort: null
     }
 
     this.status = false
-    this.dimmerFrom = this.config.delay / 3
+    this.dimmerFrom = this.config.delay / 4
+
+    this.xrandrRoation = [ "normal", "left", "right", "inverted" ]
 
     switch (this.config.mode) {
       case 0:
@@ -78,9 +83,18 @@ class SCREEN {
       case 8:
         console.log("[SCREEN] Mode 8: ddcutil")
         break
+      case 9:
+        if (this.xrandrRoation.indexOf(this.config.xrandrForceRotation) == -1) {
+          console.error(`[SCREEN] Mode 9: xrandr invalid Rotation --> ${this.config.xrandrForceRotation}, Set to default: normal`)
+          this.screen.xrandrRotation = "normal"
+        } else {
+          console.log(`[SCREEN] Mode 9: xrandr (primary display) -- Rotation: ${this.config.xrandrForceRotation}`)
+          this.screen.xrandrRotation = this.config.xrandrForceRotation
+        }
+        break
       default:
         this.logError("Unknow Mode Set to 0 (Disabled)")
-        this.sendSocketNotification("ERROR", "[SCREEN] Unknow Mode (" + this.config.mode + ") Set to 0 (Disabled)")
+        this.sendSocketNotification("ERROR", `[SCREEN] Unknow Mode (${this.config.mode}) Set to 0 (Disabled)`)
         this.config.mode = 0
         break
     }
@@ -237,7 +251,7 @@ class SCREEN {
         exec("/usr/bin/vcgencmd display_power", (err, stdout, stderr)=> {
           if (err) {
             this.logError(err)
-            this.sendSocketNotification("ERROR", "[SCREEN] vcgencmd command error (mode: " + this.config.mode + ")")
+            this.sendSocketNotification("ERROR", `[SCREEN] vcgencmd command error (mode: ${this.config.mode})`)
           }
           else {
             var displaySh = stdout.trim()
@@ -252,7 +266,7 @@ class SCREEN {
         exec("DISPLAY=:0 xset q | grep Monitor", (err, stdout, stderr)=> {
           if (err) {
             this.logError(err)
-            this.sendSocketNotification("ERROR", "[SCREEN] dpms command error (mode: " + this.config.mode + ")")
+            this.sendSocketNotification("ERROR", `[SCREEN] dpms command error (mode: ${this.config.mode})`)
           }
           else {
             let responseSh = stdout.trim()
@@ -267,7 +281,7 @@ class SCREEN {
         exec("tvservice -s | grep Hz", (err, stdout, stderr)=> {
           if (err) {
             this.logError(err)
-            this.sendSocketNotification("ERROR", "[SCREEN] tvservice command error (mode: " + this.config.mode + ")")
+            this.sendSocketNotification("ERROR", `[SCREEN] tvservice command error (mode: ${this.config.mode})`)
           }
           else {
             let responseSh = stdout.trim()
@@ -282,7 +296,7 @@ class SCREEN {
           if (err) {
             this.logError(err)
             this.logError("HDMI CEC Error: " + stdout)
-            this.sendSocketNotification("ERROR", "[SCREEN] HDMI CEC command error (mode: " + this.config.mode + ")")
+            this.sendSocketNotification("ERROR", `[SCREEN] HDMI CEC command error (mode: ${this.config.mode})`)
           } else {
             let responseSh = stdout.trim()
             var displaySh = responseSh.split("\n")[1].split(" ")[2]
@@ -297,7 +311,7 @@ class SCREEN {
         exec("xset q | grep Monitor", (err, stdout, stderr)=> {
           if (err) {
             this.logError("[Display Error] " + err)
-            this.sendSocketNotification("ERROR", "[SCREEN] dpms linux command error (mode: " + this.config.mode + ")")
+            this.sendSocketNotification("ERROR", `[SCREEN] dpms linux command error (mode: ${this.config.mode})`)
           }
           else {
             let responseSh = stdout.trim()
@@ -309,10 +323,10 @@ class SCREEN {
         break
       case 6:
       /** python script **/
-        exec("python monitor.py -s -g="+this.config.gpio, { cwd: this.PathScript }, (err, stdout, stderr)=> {
+        exec(`python monitor.py -s -g=${this.config.gpio}`, { cwd: this.PathScript }, (err, stdout, stderr)=> {
           if (err) {
             this.logError("[Display Error] " + err)
-            this.sendSocketNotification("ERROR", "[SCREEN] python relay script error (mode: " + this.config.mode + ")")
+            this.sendSocketNotification("ERROR", `[SCREEN] python relay script error (mode: ${this.config.mode})`)
           }
           else {
             let responsePy = stdout.trim()
@@ -324,14 +338,14 @@ class SCREEN {
         break
       case 7:
       /** python script reverse**/
-        exec("python monitor.py -s -g="+this.config.gpio, { cwd: this.PathScript }, (err, stdout, stderr)=> {
+        exec(`python monitor.py -s -g=${this.config.gpio}`, { cwd: this.PathScript }, (err, stdout, stderr)=> {
           if (err) {
             this.logError("[Display Error] " + err)
-            this.sendSocketNotification("ERROR", "[SCREEN] python relay script error (mode: " + this.config.mode + ")")
+            this.sendSocketNotification("ERROR", `[SCREEN] python relay script error (mode: ${this.config.mode})`)
           }
           else {
             let responsePy = stdout.trim()
-            log("Response PY -- Check State (reverse): " + responsePy)
+            log(`Response PY -- Check State (reverse): ${responsePy}`)
             if (responsePy == 0) actual = true
             this.resultDisplay(actual,wanted)
           }
@@ -342,7 +356,7 @@ class SCREEN {
         exec("ddcutil getvcp d6", (err, stdout, stderr)=> {
           if (err) {
             this.logError(err)
-            this.sendSocketNotification("ERROR", "[SCREEN] ddcutil command error (mode: " + this.config.mode + ")")
+            this.sendSocketNotification("ERROR", `[SCREEN] ddcutil command error (mode: ${this.config.mode})`)
           }
           else {
             let responseSh = stdout.trim()
@@ -354,6 +368,26 @@ class SCREEN {
           }
         })
         break
+      case 9:
+      /** xrandr on primary display **/
+        exec("xrandr | grep 'connected primary'",
+            (err, stdout, stderr)=> {
+                if (err) {
+                    this.logError(err)
+                    this.sendSocketNotification("ERROR", `[SCREEN] xrandr command error (mode: ${this.config.mode})`)
+                }
+                else {
+                    let responseSh = stdout.trim()
+                    var power = "on"
+                    this.screen.hdmiPort = responseSh.split(" ")[0]
+                    if (responseSh.split(" ")[3] == "(normal") power = "off"
+                    if (power == "on") actual = true
+                    log(`[MODE 9] Monitor on ${this.screen.hdmiPort} is ${power}`)
+                    this.resultDisplay(actual,wanted)
+                }
+            }
+        )
+        break
     }
   }
 
@@ -362,7 +396,7 @@ class SCREEN {
     this.screen.power = actual
     if (actual && !wanted) this.setPowerDisplay(false)
     if (!actual && wanted) this.setPowerDisplay(true)
-  }
+ }
 
   async setPowerDisplay(set) {
     log("Display " + (set ? "ON." : "OFF."))
@@ -393,20 +427,20 @@ class SCREEN {
         break
       case 6:
         if (set)
-          exec("python monitor.py -r=1 -g="+this.config.gpio, { cwd: this.PathScript }, (err, stdout, stderr)=> {
+          exec(`python monitor.py -r=1 -g=${this.config.gpio}`, { cwd: this.PathScript }, (err, stdout, stderr)=> {
             if (err) console.log("[SCREEN] err:", err)
             else log("Relay is " + stdout.trim())
           })
         else
           if (this.config.clearGpioValue) {
-            exec("python monitor.py -r=0 -c -g="+this.config.gpio, {cwd: this.PathScript},(err, stdout, stderr)=> {
+            exec(`python monitor.py -r=0 -c -g=${this.config.gpio}`, {cwd: this.PathScript},(err, stdout, stderr)=> {
               if (err) console.log("[SCREEN] err:", err)
               else {
                 log("Relay is " + stdout.trim())
               }
             })
           } else {
-            exec("python monitor.py -r=0 -g="+this.config.gpio, {cwd: this.PathScript},(err, stdout, stderr)=> {
+            exec(`python monitor.py -r=0 -g=${this.config.gpio}`, {cwd: this.PathScript},(err, stdout, stderr)=> {
               if (err) console.log("[SCREEN] err:", err)
               else {
                 log("Relay is " + stdout.trim())
@@ -417,14 +451,14 @@ class SCREEN {
       case 7:
         if (set) {
           if (this.config.clearGpioValue) {
-            exec("python monitor.py -r=0 -c -g="+this.config.gpio, {cwd: this.PathScript},(err, stdout, stderr)=> {
+            exec(`python monitor.py -r=0 -c -g=${this.config.gpio}`, {cwd: this.PathScript},(err, stdout, stderr)=> {
               if (err) console.log("[SCREEN] err:", err)
               else {
                 log("Relay is " + stdout.trim())
               }
             })
           } else {
-            exec("python monitor.py -r=0 -g="+this.config.gpio, {cwd: this.PathScript},(err, stdout, stderr)=> {
+            exec(`python monitor.py -r=0 -g=${this.config.gpio}`, {cwd: this.PathScript},(err, stdout, stderr)=> {
               if (err) console.log("[SCREEN] err:", err)
               else {
                 log("Relay is " + stdout.trim())
@@ -432,7 +466,7 @@ class SCREEN {
             })
           }
         } else {
-          exec("python monitor.py -r=1 -g="+this.config.gpio, { cwd: this.PathScript }, (err, stdout, stderr)=> {
+          exec(`python monitor.py -r=1 -g=${this.config.gpio}`, { cwd: this.PathScript }, (err, stdout, stderr)=> {
             if (err) console.log("[SCREEN] err:", err)
             else log("Relay is " + stdout.trim())
           })
@@ -441,6 +475,10 @@ class SCREEN {
       case 8:
         if (set) exec("ddcutil setvcp d6 1")
         else exec("ddcutil setvcp d6 4")
+        break
+      case 9:
+        if (set) exec(`xrandr --output ${this.screen.hdmiPort} --auto --rotate ${this.screen.xrandrRotation}`)
+        else exec(`xrandr --output ${this.screen.hdmiPort} --off`)
         break
     }
   }
