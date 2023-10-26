@@ -135,22 +135,22 @@ fi
 if [ -e "/etc/lightdm/lightdm.conf" ]; then
   # if screen saver NOT already disabled?
   echo "Found: screen saver in lightdm"
-  if [ $(grep 'xserver-command=X -s 0 -dpms' /etc/lightdm/lightdm.conf | wc -l) == 0 ]; then
+  if [ $(grep 'xserver-command=X -s 0' /etc/lightdm/lightdm.conf | wc -l) == 0 ]; then
     echo "disable screensaver via lightdm.conf"
-    sudo sed -i '/^\[Seat:/a xserver-command=X -s 0 -dpms' /etc/lightdm/lightdm.conf
+    sudo sed -i '/^\[Seat:/a xserver-command=X -s 0' /etc/lightdm/lightdm.conf
   else
     echo "screensaver via lightdm already disabled"
   fi
 fi
 if [ -d "/etc/xdg/lxsession/LXDE-pi" ]; then
-  currently_set=$(grep -m1 '\-dpms' /etc/xdg/lxsession/LXDE-pi/autostart)
+  currently_set=$(grep -m1 '\s off' /etc/xdg/lxsession/LXDE-pi/autostart)
   echo "Found: screen saver in lxsession"
   if [ "$currently_set." == "." ]; then
     echo "disable screensaver via lxsession"
     # turn it off for the future
-    sudo su -c "echo -e '@xset s noblank\n@xset s off\n@xset -dpms' >> /etc/xdg/lxsession/LXDE-pi/autostart"
+    sudo su -c "echo -e '@xset s noblank\n@xset s off' >> /etc/xdg/lxsession/LXDE-pi/autostart"
     # turn it off now
-    export DISPLAY=:0; xset s noblank;xset s off;xset -dpms
+    export DISPLAY=:0; xset s noblank;xset s off
   else
     echo "lxsession screen saver already disabled"
   fi
