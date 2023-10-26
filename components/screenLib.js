@@ -26,7 +26,7 @@ class SCREEN {
       mode: 1,
       gpio: 20,
       clearGpioValue: true,
-      xrandrForceRotation: "normal"
+      xrandrForceRotation: "normal",
       wrandrForceRotation: "normal"
     }
     this.config = Object.assign(this.default, this.config)
