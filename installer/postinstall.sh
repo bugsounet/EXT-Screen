@@ -150,7 +150,7 @@ if [ -e "/etc/lightdm/lightdm.conf" ]; then
   fi
 fi
 if [ -d "/etc/xdg/lxsession/LXDE-pi" ]; then
-  currently_set=$(grep -m1 '\s off' /etc/xdg/lxsession/LXDE-pi/autostart)
+  currently_set=$(grep -m1 '\xset s off' /etc/xdg/lxsession/LXDE-pi/autostart)
   echo "Found: screen saver in lxsession"
   if [ "$currently_set." == "." ]; then
     echo "disable screensaver via lxsession"
@@ -167,7 +167,7 @@ fi
 if [ -e "$HOME/.config/wayfire.ini" ]; then
   echo "Found: screen saver in wayland"
   current_set=$(grep -m1 "dpms_timeout" $HOME/.config/wayfire.ini | awk '{print $3}')
-  if [ "$curent_set" != 0 ]; then
+  if [ "$current_set" != 0 ]; then
     echo "disable screensaver via wayfire.ini"
     sed -i -r "s/^(dpms_timeout.*)$/dpms_timeout = 0/" $HOME/.config/wayfire.ini
     ((change++))
