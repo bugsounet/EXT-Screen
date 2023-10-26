@@ -166,7 +166,6 @@ if [ -d "/etc/xdg/lxsession/LXDE-pi" ]; then
 fi
 
 if [ -e "$HOME/.config/wayfire.ini" ]; then
-  # if screen saver NOT already disabled?
   echo "Found: screen saver in wayland"
   if [ $(grep -m1 "dpms_timeout" $HOME/.config/wayfire.ini | awk '{print $3}') != 0 ]; then
     echo "disable screensaver via wayfire.ini"
