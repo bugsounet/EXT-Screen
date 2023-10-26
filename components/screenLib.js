@@ -117,7 +117,7 @@ class SCREEN {
         var hours   = Math.floor(sec_num / 3600);
         var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
         var seconds = sec_num - (hours * 3600) - (minutes * 60);
-    
+
         if (hours   < 10) {hours   = "0"+hours;}
         if (minutes < 10) {minutes = "0"+minutes;}
         if (seconds < 10) {seconds = "0"+seconds;}
@@ -410,7 +410,7 @@ class SCREEN {
                 } else {
                   let responseSh = stdout.trim()
                   if (responseSh.split(" ")[2] == "yes") actual = true
-                  exec("WAYLAND_DISPLAY=wayland-1 wlr-randr"),
+                  exec("WAYLAND_DISPLAY=wayland-1 wlr-randr",
                     (err, stdout, stderr) => {
                       if (err) {
                         this.logError(err)
@@ -420,7 +420,7 @@ class SCREEN {
                         log(`[MODE 10] Monitor on ${this.screen.hdmiPort} is ${actual}`)
                         this.resultDisplay(actual,wanted)
                       }
-                    }
+                    })
                 }
             }
         )
@@ -433,7 +433,7 @@ class SCREEN {
     this.screen.power = actual
     if (actual && !wanted) this.setPowerDisplay(false)
     if (!actual && wanted) this.setPowerDisplay(true)
- }
+  }
 
   async setPowerDisplay(set) {
     log("Display " + (set ? "ON." : "OFF."))
