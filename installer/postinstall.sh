@@ -178,7 +178,7 @@ fi
 if [[ "$change" -gt 0 ]]; then
   echo
   Installer_warning "[WARN] There is some change for disable screen saver"
-  Installer_warning "[WARN] Please, don't forget to reboot your OS for apply new configuration!"
+  Installer_warning "[WARN] Please, don't forget to reboot your OS for apply the new configuration!"
 fi
 Installer_success "Done"
 echo
