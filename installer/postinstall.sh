@@ -166,7 +166,8 @@ fi
 
 if [ -e "$HOME/.config/wayfire.ini" ]; then
   echo "Found: screen saver in wayland"
-  if [ $(grep -m1 "dpms_timeout" $HOME/.config/wayfire.ini | awk '{print $3}') != 0 ]; then
+  current_set=$(grep -m1 "dpms_timeout" $HOME/.config/wayfire.ini | awk '{print $3}')
+  if [ "$curent_set" != 0 ]; then
     echo "disable screensaver via wayfire.ini"
     sed -i -r "s/^(dpms_timeout.*)$/dpms_timeout = 0/" $HOME/.config/wayfire.ini
     ((change++))
