@@ -409,14 +409,15 @@ class SCREEN {
                     this.sendSocketNotification("ERROR", `[SCREEN] wlr-randr command error (mode: ${this.config.mode})`)
                 } else {
                   let responseSh = stdout.trim()
-                  if (responseSh.split(" ")[2] == "yes") actual = true
+                  if (responseSh.split(" ")[1] == "yes") actual = true
                   exec("WAYLAND_DISPLAY=wayland-1 wlr-randr",
                     (err, stdout, stderr) => {
                       if (err) {
                         this.logError(err)
                         this.sendSocketNotification("ERROR", `[SCREEN] wlr-randr scan screen command error (mode: ${this.config.mode})`)
                       } else {
-                        this.screen.hdmiPort = responseSh.split(" ")[0]
+                        let wResponse = stdout.trim()
+                        this.screen.hdmiPort = wResponse.split(" ")[0]
                         log(`[MODE 10] Monitor on ${this.screen.hdmiPort} is ${actual}`)
                         this.resultDisplay(actual,wanted)
                       }
