@@ -177,7 +177,9 @@ if [ -e "$HOME/.config/wayfire.ini" ]; then
 fi
 
 if [[ "$change" -gt 0 ]]; then
-  Installer_warning "There is some change, don't forget to reboot your OS!"
+  echo
+  Installer_warning "[WARN] There is some change for disable screen saver"
+  Installer_warning "[WARN] Please, don't forget to reboot your OS for apply new configuration!"
 fi
 Installer_success "Done"
 echo
