@@ -165,10 +165,16 @@ if [ -d "/etc/xdg/lxsession/LXDE-pi" ]; then
   fi
 fi
 
-if  [ "$os_name" == "raspbian" ] && [ "$os_version" == 12 ]; then
-  Installer_info "OS Detected: $OSTYPE ($os_name $os_version $arch)"
-  Installer_info "Enable Screen Blanking"
-  sudo raspi-config nonint do_blanking 1
+if [ -e "$HOME/.config/wayfire.ini" ]; then
+  # if screen saver NOT already disabled?
+  echo "Found: screen saver in wayland"
+  if [ $(grep -m1 "dpms_timeout" $HOME/.config/wayfire.ini | awk '{print $3}') != 0 ]; then
+    echo "disable screensaver via wayfire.ini"
+    sed -i -r "s/^(dpms_timeout.*)$/dpms_timeout = 0/" $HOME/.config/wayfire.ini
+    ((change++))
+  else
+    echo "wayland screen saver already disabled"
+  fi
 fi
 
 if [[ "$change" -gt 0 ]]; then
