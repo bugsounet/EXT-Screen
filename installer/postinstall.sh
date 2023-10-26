@@ -6,6 +6,7 @@
 rebuild=0
 minify=0
 bugsounet=0
+change=0
 
 while getopts ":rmb" option; do
   case $option in
@@ -34,6 +35,7 @@ Installer_dir="$(Installer_get_current_dir)"
 # move to installler directory
 cd "$Installer_dir"
 source utils.sh
+Installer_checkOS
 echo
 
 if [[ $minify == 1 ]]; then
@@ -84,16 +86,19 @@ if [ "$screen_saver_running." != "." ]; then
         gsettings set org.mate.screensaver lock_delay 0	 2>/dev/null
      echo " $screen_saver_running disabled"
      DISPLAY=:0  mate-screensaver  >/dev/null 2>&1 &
+     ((change++))
      ;;
    gnome-screensaver) echo 'Found: gnome screen saver'
      gnome_screensaver-command -d >/dev/null 2>&1
      echo " $screen_saver_running disabled"
+     ((change++))
      ;;
    xscreensaver) echo 'Found: xscreensaver running'
      xsetting=$(grep -m1 'mode:' ~/.xscreensaver )
      if [ $(echo $xsetting | awk '{print $2}') != 'off' ]; then
        sed -i "s/$xsetting/mode: off/" "$HOME/.xscreensaver"
        echo " xscreensaver set to off"
+       ((change++))
      else
        echo " xscreensaver already disabled"
      fi
@@ -107,6 +112,7 @@ if [ "$screen_saver_running." != "." ]; then
           gsettings set org.gnome.desktop.screensaver lock-enabled false
           gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
           gsettings set org.gnome.desktop.session idle-delay 0
+          ((change++))
         else
           echo "gsettings screen saver already disabled"
         fi
@@ -127,6 +133,7 @@ if [ $(which gsettings | wc -l) == 1 ]; then
       gsettings set org.gnome.desktop.screensaver lock-enabled false
       gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
       gsettings set org.gnome.desktop.session idle-delay 0
+      ((change++))
     else
       echo "gsettings screen saver already disabled"
     fi
@@ -138,6 +145,7 @@ if [ -e "/etc/lightdm/lightdm.conf" ]; then
   if [ $(grep 'xserver-command=X -s 0' /etc/lightdm/lightdm.conf | wc -l) == 0 ]; then
     echo "disable screensaver via lightdm.conf"
     sudo sed -i '/^\[Seat:/a xserver-command=X -s 0' /etc/lightdm/lightdm.conf
+    ((change++))
   else
     echo "screensaver via lightdm already disabled"
   fi
@@ -151,9 +159,20 @@ if [ -d "/etc/xdg/lxsession/LXDE-pi" ]; then
     sudo su -c "echo -e '@xset s noblank\n@xset s off' >> /etc/xdg/lxsession/LXDE-pi/autostart"
     # turn it off now
     export DISPLAY=:0; xset s noblank;xset s off
+    ((change++))
   else
     echo "lxsession screen saver already disabled"
   fi
+fi
+
+if  [ "$os_name" == "raspbian" ] && [ "$os_version" == 12 ]; then
+  Installer_info "OS Detected: $OSTYPE ($os_name $os_version $arch)"
+  Installer_info "Enable Screen Blanking"
+  sudo raspi-config nonint do_blanking 1
+fi
+
+if [[ "$change" -gt 0 ]]; then
+  Installer_warning "There is some change, don't forget to reboot your OS!"
 fi
 Installer_success "Done"
 echo
