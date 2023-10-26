@@ -35,7 +35,6 @@ Installer_dir="$(Installer_get_current_dir)"
 # move to installler directory
 cd "$Installer_dir"
 source utils.sh
-Installer_checkOS
 echo
 
 if [[ $minify == 1 ]]; then
