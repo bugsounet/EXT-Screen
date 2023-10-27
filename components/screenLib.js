@@ -49,7 +49,8 @@ class SCREEN {
       cronOFF: false,
       xrandrRotation: null,
       wrandrRotation: null,
-      hdmiPort: null
+      hdmiPort: null,
+      forceOnStart: true
     }
 
     this.status = false
@@ -430,10 +431,16 @@ class SCREEN {
   }
 
   resultDisplay(actual,wanted) {
-    log("Display -- Actual: " + actual + " - Wanted: " + wanted)
-    this.screen.power = actual
-    if (actual && !wanted) this.setPowerDisplay(false)
-    if (!actual && wanted) this.setPowerDisplay(true)
+    if (this.screen.forceOnStart) {
+      log("Display: Force On Start")
+      this.setPowerDisplay(true)
+      this.screen.forceOnStart = false
+    } else {
+      log("Display -- Actual: " + actual + " - Wanted: " + wanted)
+      this.screen.power = actual
+      if (actual && !wanted) this.setPowerDisplay(false)
+      if (!actual && wanted) this.setPowerDisplay(true)
+    }
   }
 
   async setPowerDisplay(set) {
