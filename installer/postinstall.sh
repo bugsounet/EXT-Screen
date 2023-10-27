@@ -6,6 +6,7 @@
 rebuild=0
 minify=0
 bugsounet=0
+change=0
 
 while getopts ":rmb" option; do
   case $option in
@@ -84,16 +85,19 @@ if [ "$screen_saver_running." != "." ]; then
         gsettings set org.mate.screensaver lock_delay 0	 2>/dev/null
      echo " $screen_saver_running disabled"
      DISPLAY=:0  mate-screensaver  >/dev/null 2>&1 &
+     ((change++))
      ;;
    gnome-screensaver) echo 'Found: gnome screen saver'
      gnome_screensaver-command -d >/dev/null 2>&1
      echo " $screen_saver_running disabled"
+     ((change++))
      ;;
    xscreensaver) echo 'Found: xscreensaver running'
      xsetting=$(grep -m1 'mode:' ~/.xscreensaver )
      if [ $(echo $xsetting | awk '{print $2}') != 'off' ]; then
        sed -i "s/$xsetting/mode: off/" "$HOME/.xscreensaver"
        echo " xscreensaver set to off"
+       ((change++))
      else
        echo " xscreensaver already disabled"
      fi
@@ -107,6 +111,7 @@ if [ "$screen_saver_running." != "." ]; then
           gsettings set org.gnome.desktop.screensaver lock-enabled false
           gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
           gsettings set org.gnome.desktop.session idle-delay 0
+          ((change++))
         else
           echo "gsettings screen saver already disabled"
         fi
@@ -127,6 +132,7 @@ if [ $(which gsettings | wc -l) == 1 ]; then
       gsettings set org.gnome.desktop.screensaver lock-enabled false
       gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
       gsettings set org.gnome.desktop.session idle-delay 0
+      ((change++))
     else
       echo "gsettings screen saver already disabled"
     fi
@@ -135,25 +141,45 @@ fi
 if [ -e "/etc/lightdm/lightdm.conf" ]; then
   # if screen saver NOT already disabled?
   echo "Found: screen saver in lightdm"
-  if [ $(grep 'xserver-command=X -s 0 -dpms' /etc/lightdm/lightdm.conf | wc -l) == 0 ]; then
+  if [ $(grep 'xserver-command=X -s 0' /etc/lightdm/lightdm.conf | wc -l) == 0 ]; then
     echo "disable screensaver via lightdm.conf"
-    sudo sed -i '/^\[Seat:/a xserver-command=X -s 0 -dpms' /etc/lightdm/lightdm.conf
+    sudo sed -i '/^\[Seat:/a xserver-command=X -s 0' /etc/lightdm/lightdm.conf
+    ((change++))
   else
     echo "screensaver via lightdm already disabled"
   fi
 fi
 if [ -d "/etc/xdg/lxsession/LXDE-pi" ]; then
-  currently_set=$(grep -m1 '\-dpms' /etc/xdg/lxsession/LXDE-pi/autostart)
+  currently_set=$(grep -m1 '\xset s off' /etc/xdg/lxsession/LXDE-pi/autostart)
   echo "Found: screen saver in lxsession"
   if [ "$currently_set." == "." ]; then
     echo "disable screensaver via lxsession"
     # turn it off for the future
-    sudo su -c "echo -e '@xset s noblank\n@xset s off\n@xset -dpms' >> /etc/xdg/lxsession/LXDE-pi/autostart"
+    sudo su -c "echo -e '@xset s noblank\n@xset s off' >> /etc/xdg/lxsession/LXDE-pi/autostart"
     # turn it off now
-    export DISPLAY=:0; xset s noblank;xset s off;xset -dpms
+    export DISPLAY=:0; xset s noblank;xset s off
+    ((change++))
   else
     echo "lxsession screen saver already disabled"
   fi
+fi
+
+if [ -e "$HOME/.config/wayfire.ini" ]; then
+  echo "Found: screen saver in wayland"
+  current_set=$(grep -m1 "dpms_timeout" $HOME/.config/wayfire.ini | awk '{print $3}')
+  if [ "$current_set" != 0 ]; then
+    echo "disable screensaver via wayfire.ini"
+    sed -i -r "s/^(dpms_timeout.*)$/dpms_timeout = 0/" $HOME/.config/wayfire.ini
+    ((change++))
+  else
+    echo "wayland screen saver already disabled"
+  fi
+fi
+
+if [[ "$change" -gt 0 ]]; then
+  echo
+  Installer_warning "[WARN] There is some change for disable screen saver"
+  Installer_warning "[WARN] Please, don't forget to reboot your OS for apply the new configuration!"
 fi
 Installer_success "Done"
 echo

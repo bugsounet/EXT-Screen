@@ -26,7 +26,8 @@ class SCREEN {
       mode: 1,
       gpio: 20,
       clearGpioValue: true,
-      xrandrForceRotation: "normal"
+      xrandrForceRotation: "normal",
+      wrandrForceRotation: "normal"
     }
     this.config = Object.assign(this.default, this.config)
     this.screen = {
@@ -47,13 +48,16 @@ class SCREEN {
       cronON: false,
       cronOFF: false,
       xrandrRotation: null,
-      hdmiPort: null
+      wrandrRotation: null,
+      hdmiPort: null,
+      forceOnStart: true
     }
 
     this.status = false
     this.dimmerFrom = this.config.delay / 4
 
     this.xrandrRoation = [ "normal", "left", "right", "inverted" ]
+    this.wrandrRoation = [ "normal", "90", "180", "270", "flipped", "flipped-90", "flipped-180", "flipped-270" ]
 
     switch (this.config.mode) {
       case 0:
@@ -92,6 +96,15 @@ class SCREEN {
           this.screen.xrandrRotation = this.config.xrandrForceRotation
         }
         break
+      case 10:
+        if (this.wrandrRoation.indexOf(this.config.wrandrForceRotation) == -1) {
+          console.error(`[SCREEN] Mode 10: wlr-randr invalid Rotation --> ${this.config.wrandrForceRotation}, Set to default: normal`)
+          this.screen.wrandrRotation = "normal"
+        } else {
+          console.log(`[SCREEN] Mode 10: wlr-randr (primary display) -- Rotation: ${this.config.wrandrForceRotation}`)
+          this.screen.wrandrRotation = this.config.wrandrForceRotation
+        }
+        break
       default:
         this.logError("Unknow Mode Set to 0 (Disabled)")
         this.sendSocketNotification("ERROR", `[SCREEN] Unknow Mode (${this.config.mode}) Set to 0 (Disabled)`)
@@ -105,7 +118,7 @@ class SCREEN {
         var hours   = Math.floor(sec_num / 3600);
         var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
         var seconds = sec_num - (hours * 3600) - (minutes * 60);
-    
+
         if (hours   < 10) {hours   = "0"+hours;}
         if (minutes < 10) {minutes = "0"+minutes;}
         if (seconds < 10) {seconds = "0"+seconds;}
@@ -388,15 +401,47 @@ class SCREEN {
             }
         )
         break
+      case 10:
+      /** wl-randr on primary display **/
+        exec("WAYLAND_DISPLAY=wayland-1 wlr-randr | grep 'Enabled'",
+            (err, stdout, stderr)=> {
+                if (err) {
+                    this.logError(err)
+                    this.sendSocketNotification("ERROR", `[SCREEN] wlr-randr command error (mode: ${this.config.mode})`)
+                } else {
+                  let responseSh = stdout.trim()
+                  if (responseSh.split(" ")[1] == "yes") actual = true
+                  exec("WAYLAND_DISPLAY=wayland-1 wlr-randr",
+                    (err, stdout, stderr) => {
+                      if (err) {
+                        this.logError(err)
+                        this.sendSocketNotification("ERROR", `[SCREEN] wlr-randr scan screen command error (mode: ${this.config.mode})`)
+                      } else {
+                        let wResponse = stdout.trim()
+                        this.screen.hdmiPort = wResponse.split(" ")[0]
+                        log(`[MODE 10] Monitor on ${this.screen.hdmiPort} is ${actual}`)
+                        this.resultDisplay(actual,wanted)
+                      }
+                    })
+                }
+            }
+        )
+        break
     }
   }
 
   resultDisplay(actual,wanted) {
-    log("Display -- Actual: " + actual + " - Wanted: " + wanted)
-    this.screen.power = actual
-    if (actual && !wanted) this.setPowerDisplay(false)
-    if (!actual && wanted) this.setPowerDisplay(true)
- }
+    if (this.screen.forceOnStart) {
+      log("Display: Force On Start")
+      this.setPowerDisplay(true)
+      this.screen.forceOnStart = false
+    } else {
+      log("Display -- Actual: " + actual + " - Wanted: " + wanted)
+      this.screen.power = actual
+      if (actual && !wanted) this.setPowerDisplay(false)
+      if (!actual && wanted) this.setPowerDisplay(true)
+    }
+  }
 
   async setPowerDisplay(set) {
     log("Display " + (set ? "ON." : "OFF."))
@@ -479,6 +524,10 @@ class SCREEN {
       case 9:
         if (set) exec(`xrandr --output ${this.screen.hdmiPort} --auto --rotate ${this.screen.xrandrRotation}`)
         else exec(`xrandr --output ${this.screen.hdmiPort} --off`)
+        break
+      case 10:
+        if (set) exec(`WAYLAND_DISPLAY=wayland-1 wlr-randr --output ${this.screen.hdmiPort} --on --transform ${this.screen.wrandrRotation}`)
+        else exec(`WAYLAND_DISPLAY=wayland-1 wlr-randr --output ${this.screen.hdmiPort} --off`)
         break
     }
   }

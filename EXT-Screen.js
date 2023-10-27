@@ -15,6 +15,7 @@ Module.register("EXT-Screen", {
       delay: 2 * 60 * 1000,
       mode: 1,
       xrandrForceRotation: "normal",
+      wrandrForceRotation: "normal",
       displayCounter: true,
       displayBar: true,
       displayStyle: "Text",
