@@ -141,26 +141,40 @@ fi
 if [ -e "/etc/lightdm/lightdm.conf" ]; then
   # if screen saver NOT already disabled?
   echo "Found: screen saver in lightdm"
-  if [ $(grep 'xserver-command=X -s 0' /etc/lightdm/lightdm.conf | wc -l) == 0 ]; then
-    echo "disable screensaver via lightdm.conf"
-    sudo sed -i '/^\[Seat:/a xserver-command=X -s 0' /etc/lightdm/lightdm.conf
+  if [ $(grep 'xserver-command=X -s 0 -dpms' /etc/lightdm/lightdm.conf | wc -l) != 0 ]; then
+    echo "screensaver via lightdm already disabled but need to be updated"
+    sudo sed -i -r "s/^(xserver-command.*)$/xserver-command=X -s 0/" /etc/lightdm/lightdm.conf
     ((change++))
   else
-    echo "screensaver via lightdm already disabled"
+    if [ $(grep 'xserver-command=X -s 0' /etc/lightdm/lightdm.conf | wc -l) == 0 ]; then
+      echo "disable screensaver via lightdm.conf"
+      sudo sed -i '/^\[Seat:/a xserver-command=X -s 0' /etc/lightdm/lightdm.conf
+      ((change++))
+    else
+      echo "screensaver via lightdm already disabled"
+    fi
   fi
 fi
 if [ -d "/etc/xdg/lxsession/LXDE-pi" ]; then
+  currently_set_old=$(grep -m1 '\-dpms' /etc/xdg/lxsession/LXDE-pi/autostart)
   currently_set=$(grep -m1 '\xset s off' /etc/xdg/lxsession/LXDE-pi/autostart)
   echo "Found: screen saver in lxsession"
-  if [ "$currently_set." == "." ]; then
-    echo "disable screensaver via lxsession"
-    # turn it off for the future
-    sudo su -c "echo -e '@xset s noblank\n@xset s off' >> /etc/xdg/lxsession/LXDE-pi/autostart"
-    # turn it off now
+  if [ "$currently_set_old." != "." ]; then
+    echo "lxsession screen saver already disabled but need to updated"
+    sudo sed -i "/^@xset -dpms/d" /etc/xdg/lxsession/LXDE-pi/autostart
     export DISPLAY=:0; xset s noblank;xset s off
     ((change++))
   else
-    echo "lxsession screen saver already disabled"
+    if [ "$currently_set." == "." ]; then
+      echo "disable screensaver via lxsession"
+      # turn it off for the future
+      sudo su -c "echo -e '@xset s noblank\n@xset s off' >> /etc/xdg/lxsession/LXDE-pi/autostart"
+      # turn it off now
+      export DISPLAY=:0; xset s noblank;xset s off
+      ((change++))
+    else
+      echo "lxsession screen saver already disabled"
+    fi
   fi
 fi
 
