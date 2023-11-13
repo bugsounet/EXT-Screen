@@ -35,6 +35,6 @@
     "cron-parser": "^4.9.0",
     "esbuild": "^0.19.5",
     "glob": "^10.3.10",
-    "node-cron": "^3.0.2"
+    "node-cron": "^3.0.3"
   }
 }
