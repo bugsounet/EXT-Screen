@@ -33,7 +33,7 @@
   "homepage": "https://wiki.bugsounet.fr/en/EXT-Screen",
   "dependencies": {
     "cron-parser": "^4.9.0",
-    "esbuild": "^0.19.5",
+    "esbuild": "^0.19.6",
     "glob": "^10.3.10",
     "node-cron": "^3.0.3"
   }
