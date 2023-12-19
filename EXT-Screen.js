@@ -45,7 +45,7 @@ Module.register("EXT-Screen", {
 
     start: function () {
       this.ignoreSender= [
-        "Gateway",
+        "MMM-GoogleAssistant",
         "EXT-Pir",
         "EXT-Screen",
         "EXT-Motion",
