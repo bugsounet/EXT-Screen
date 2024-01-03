@@ -45,7 +45,7 @@ Module.register("EXT-Screen", {
 
     start: function () {
       this.ignoreSender= [
-        "Gateway",
+        "MMM-GoogleAssistant",
         "EXT-Pir",
         "EXT-Screen",
         "EXT-Motion",
@@ -152,8 +152,8 @@ Module.register("EXT-Screen", {
     },
 
     notificationReceived: function (notification, payload, sender) {
-      if (notification == "GW_READY") {
-        if (sender.name == "Gateway") {
+      if (notification == "GA_READY") {
+        if (sender.name == "MMM-GoogleAssistant") {
           if (this.config.animateBody) this.screenDisplay.prepareBody()
           this.screenDisplay.prepareBar()
           this.sendSocketNotification("INIT", this.config)
