@@ -1,7 +1,7 @@
 {
   "name": "EXT-Screen",
-  "version": "2.4.0",
-  "rev": "240103",
+  "version": "2.4.1",
+  "rev": "240204",
   "description": "GA EXT Screen manager",
   "main": "EXT-Screen.js",
   "scripts": {
@@ -33,7 +33,7 @@
   "homepage": "https://wiki.bugsounet.fr/en/EXT-Screen",
   "dependencies": {
     "cron-parser": "^4.9.0",
-    "esbuild": "^0.19.11",
+    "esbuild": "^0.20.0",
     "glob": "^10.3.10",
     "node-cron": "^3.0.3"
   }
