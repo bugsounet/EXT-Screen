@@ -28,7 +28,8 @@ class SCREEN {
       gpio: 20,
       clearGpioValue: true,
       xrandrForceRotation: "normal",
-      wrandrForceRotation: "normal"
+      wrandrForceRotation: "normal",
+      wrandrForceMode: null
     };
     this.config = Object.assign(this.default, this.config);
     this.screen = {
@@ -50,6 +51,7 @@ class SCREEN {
       cronOFF: false,
       xrandrRotation: null,
       wrandrRotation: null,
+      wrandrForceMode: null,
       hdmiPort: null,
       forceOnStart: true
     };
@@ -105,6 +107,10 @@ class SCREEN {
           console.log(`[SCREEN] Mode 10: wlr-randr (primary display) -- Rotation: ${this.config.wrandrForceRotation}`);
           this.screen.wrandrRotation = this.config.wrandrForceRotation;
         }
+        if (this.config.wrandrForceMode) {
+          console.log(`[SCREEN] Mode 10: wlr-randr -- ForceMode: ${this.config.wrandrForceMode}`);
+          this.screen.wrandrForceMode = this.config.wrandrForceMode;
+        }
         break;
       default:
         this.logError("Unknow Mode Set to 0 (Disabled)");
@@ -135,7 +141,7 @@ class SCREEN {
     process.on("exit", (code) => {
       if (this.config.mode) this.setPowerDisplay(true);
       this.governor("GOVERNOR_WORKING");
-      console.log("[SCREEN] ByeBye !");
+      console.log("[SCREEN] ByeBye!");
       console.log("[SCREEN] @bugsounet");
     });
     this.start();
@@ -525,7 +531,16 @@ class SCREEN {
         else exec(`xrandr --output ${this.screen.hdmiPort} --off`);
         break;
       case 10:
-        if (set) exec(`WAYLAND_DISPLAY=wayland-1 wlr-randr --output ${this.screen.hdmiPort} --on --transform ${this.screen.wrandrRotation}`);
+        if (set) {
+          let wrandrOptions = [
+            "--output", this.screen.hdmiPort,
+            "--on",
+            "--transform", this.screen.wrandrRotation
+          ];
+          if (this.screen.wrandrForceMode) wrandrOptions.push("--mode", this.screen.wrandrForceMode);
+          wrandrOptions = wrandrOptions.join(" ");
+          exec(`WAYLAND_DISPLAY=wayland-1 wlr-randr ${wrandrOptions}`);
+        }
         else exec(`WAYLAND_DISPLAY=wayland-1 wlr-randr --output ${this.screen.hdmiPort} --off`);
         break;
     }

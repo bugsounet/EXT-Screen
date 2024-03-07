@@ -15,6 +15,7 @@ Module.register("EXT-Screen", {
     mode: 1,
     xrandrForceRotation: "normal",
     wrandrForceRotation: "normal",
+    wrandrForceMode: null,
     displayCounter: true,
     displayBar: true,
     displayStyle: "Text",
@@ -56,9 +57,26 @@ Module.register("EXT-Screen", {
     this.userPresence = null;
     this.lastPresence = null;
     this.ready = false;
-    this.screenDisplay = new screenDisplayer(this);
+    let Tools = {
+      sendSocketNotification: (...args) => this.sendSocketNotification(...args),
+      sendNotification: (...args) => this.this.sendNotification(...args),
+      hidden: () => { return this.hidden; },
+      translate: (...args) => this.translate(...args),
+      hide: (...args) => this.hide(...args),
+      show: (...args) => this.show(...args)
+    };
+    let displayConfig = {
+      animateBody: this.config.animateBody,
+      displayCounter: this.config.displayCounter,
+      displayBar: this.config.displayBar,
+      displayStyle: this.config.displayStyle,
+      displayLastPresence: this.config.displayLastPresence,
+      displayAvailability: this.config.displayAvailability,
+      delay: this.config.delay
+    };
+    this.screenDisplay = new screenDisplayer(displayConfig, Tools);
     this.screenDisplay.checkStyle();
-    this.screenTouch = new screenTouch(this);
+    this.screenTouch = new screenTouch(this.config.touchMode, Tools);
     this.isForceLocked = false;
   },
 
