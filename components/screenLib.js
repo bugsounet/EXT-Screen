@@ -533,9 +533,11 @@ class SCREEN {
       case 10:
         if (set) {
           let wrandrOptions = [
-            "--output", this.screen.hdmiPort,
+            "--output",
+            this.screen.hdmiPort,
             "--on",
-            "--transform", this.screen.wrandrRotation
+            "--transform",
+            this.screen.wrandrRotation
           ];
           if (this.screen.wrandrForceMode) wrandrOptions.push("--mode", this.screen.wrandrForceMode);
           wrandrOptions = wrandrOptions.join(" ");
