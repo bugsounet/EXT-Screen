@@ -34,11 +34,11 @@ class screenTouch {
       case 2:
       /** mode 2 **/
         TouchScreen.addEventListener("click", () => {
-          if (!this.hidden) this.sendSocketNotification("LOCK_FORCE_WAKEUP");
+          if (!this.hidden()) this.sendSocketNotification("LOCK_FORCE_WAKEUP");
         }, false);
 
         window.addEventListener("long-press", () => {
-          if (this.hidden) this.sendSocketNotification("LOCK_FORCE_WAKEUP");
+          if (this.hidden()) this.sendSocketNotification("LOCK_FORCE_WAKEUP");
           else {
             this.sendNotification("EXT_STOP");
             this.sendSocketNotification("LOCK_FORCE_END");
@@ -63,7 +63,7 @@ class screenTouch {
         }, false);
 
         window.addEventListener("click", () => {
-          if (this.hidden) {
+          if (this.hidden()) {
             clearTimeout(this.clickTimer);
             this.clickCount = 0;
             this.sendSocketNotification("LOCK_FORCE_WAKEUP");

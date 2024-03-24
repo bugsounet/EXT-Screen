@@ -1,7 +1,7 @@
 {
   "name": "EXT-Screen",
-  "version": "2.5.0",
-  "rev": "240307",
+  "version": "2.5.1",
+  "rev": "240324",
   "description": "GA EXT Screen manager",
   "main": "EXT-Screen.js",
   "scripts": {
@@ -37,13 +37,13 @@
   "homepage": "https://wiki.bugsounet.fr/en/EXT-Screen",
   "dependencies": {
     "cron-parser": "^4.9.0",
-    "esbuild": "^0.20.1",
+    "esbuild": "^0.20.2",
     "glob": "^10.3.10",
     "node-cron": "^3.0.3"
   },
   "devDependencies": {
     "@eslint/js": "^8.57.0",
-    "@stylistic/eslint-plugin": "^1.6.3",
+    "@stylistic/eslint-plugin": "^1.7.0",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.1"
   }
