@@ -59,7 +59,7 @@ Module.register("EXT-Screen", {
     this.ready = false;
     let Tools = {
       sendSocketNotification: (...args) => this.sendSocketNotification(...args),
-      sendNotification: (...args) => this.this.sendNotification(...args),
+      sendNotification: (...args) => this.sendNotification(...args),
       hidden: () => { return this.hidden; },
       translate: (...args) => this.translate(...args),
       hide: (...args) => this.hide(...args),
