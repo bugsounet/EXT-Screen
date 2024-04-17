@@ -38,7 +38,7 @@
   "dependencies": {
     "cron-parser": "^4.9.0",
     "esbuild": "^0.20.2",
-    "glob": "^10.3.10",
+    "glob": "^10.3.12",
     "node-cron": "^3.0.3"
   },
   "devDependencies": {
