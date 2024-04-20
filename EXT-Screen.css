@@ -1,5 +1,6 @@
 #EXT-SCREEN {
-  font-size: large;
+  display: inline-flex;
+  flex-direction: column;
   min-width: 250px;
 }
 

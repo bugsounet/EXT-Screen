@@ -114,9 +114,7 @@ class screenDisplayer {
     });
   }
 
-  barAnimate (payload) {
-    let value = (100 - ((payload * 100) / this.config.delay))/100;
-    let timeOut = moment(new Date(this.config.delay-payload)).format("m:ss");
+  barAnimate (value, timeOut) {
     this.bar.animate(value, {
       step: (state, bar) => {
         bar.path.setAttribute("stroke", state.color);
@@ -183,13 +181,15 @@ class screenDisplayer {
     /** Crash prevent on Time Out Style Displaying **/
     /** --> Set to "Text" if not found */
     let Style = [ "Text", "Line", "SemiCircle", "Circle" ];
-    let found = Style.find((style) => {
+    let result = Style.find((style) => {
       return style === this.config.displayStyle;
     });
-    if (!found) {
-      console.error(`[SCREEN] displayStyle Error ! [${ this.config.displayStyle  }]`);
+    if (!result) {
+      console.error(`[SCREEN] displayStyle Error ! [${this.config.displayStyle}]`);
       this.config.displayStyle = "Text";
+      result = "Text";
     }
+    return result;
   }
 
   opacityRegions (dimmer) {
