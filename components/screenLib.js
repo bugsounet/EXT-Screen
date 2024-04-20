@@ -181,22 +181,22 @@ class SCREEN {
         this.screen.availabilityPercent = (this.screen.availabilityCounter*100)/this.screen.uptime;
         this.screen.availabilityTimeSec = this.screen.uptime > 86400 ? (this.screen.availabilityPercent * 864) : this.screen.availabilityCounter;
         this.screen.availabilityTimeHuman = this.screen.availabilityTimeSec.toHHMMSS();
-        this.screen.output.availabilityPercent = parseFloat(this.screen.availabilityPercent.toFixed(1))
-        this.screen.output.availability = this.screen.availabilityTimeHuman
+        this.screen.output.availabilityPercent = parseFloat(this.screen.availabilityPercent.toFixed(1));
+        this.screen.output.availability = this.screen.availabilityTimeHuman;
       }
 
       this.screen.running = true;
       if (this.config.autoDimmer && (this.counter <= this.screen.dimmerFrom)) {
         this.screen.dimmer = (100 - (((this.screen.dimmerFrom - this.counter) * 100) / this.screen.dimmerFrom))/100;
       }
-      let currentRemain = this.config.delay - this.counter
+      let currentRemain = this.config.delay - this.counter;
 
-      this.screen.output.timer = moment(new Date(this.counter)).format("m:ss")
-      this.screen.output.bar = (100 - ((currentRemain * 100) / this.config.delay))/100
-      this.screen.output.dimmer = this.screen.dimmer
+      this.screen.output.timer = moment(new Date(this.counter)).format("m:ss");
+      this.screen.output.bar = (100 - ((currentRemain * 100) / this.config.delay))/100;
+      this.screen.output.dimmer = this.screen.dimmer;
 
       this.sendSocketNotification("SCREEN_OUTPUT", this.screen.output);
-      log("Output:", this.screen.output)
+      log("Output:", this.screen.output);
 
       if (this.counter <= 0) {
         clearInterval(this.interval);
@@ -215,7 +215,7 @@ class SCREEN {
     this.screen.power = false;
     if (this.config.mode) this.wantedPowerDisplay(false);
     if (this.config.detectorSleeping) this.detector("DETECTOR_STOP");
-    this.screen.dimmer = 0
+    this.screen.dimmer = 0;
     this.governor("GOVERNOR_SLEEPING");
     this.sendSocketNotification("SCREEN_PRESENCE", false);
   }
