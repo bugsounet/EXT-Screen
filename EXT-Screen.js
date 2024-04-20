@@ -75,7 +75,7 @@ Module.register("EXT-Screen", {
       delay: this.config.delay
     };
     this.screenDisplay = new screenDisplayer(displayConfig, Tools);
-    this.screenDisplay.checkStyle();
+    this.config.displayStyle = this.screenDisplay.checkStyle();
     this.screenTouch = new screenTouch(this.config.touchMode, Tools);
     this.isForceLocked = false;
   },
@@ -93,19 +93,19 @@ Module.register("EXT-Screen", {
       case "SCREEN_HIDING":
         this.screenDisplay.screenHiding();
         break;
-      case "SCREEN_TIMER":
+      case "SCREEN_OUTPUT":
         if (this.config.displayStyle === "Text") {
           let counter = document.getElementById("EXT-SCREEN_SCREEN_COUNTER");
-          counter.textContent = payload;
+          counter.textContent = payload.timer;
+        } else {
+          this.screenDisplay.barAnimate(payload.bar, payload.timer);
         }
-        break;
-      case "SCREEN_BAR":
-        if (this.config.displayStyle === "Bar") {
-          let bar = document.getElementById("EXT-SCREEN_SCREEN_BAR");
-          bar.value= this.config.delay - payload;
+        if (this.config.autoDimmer) {
+          this.screenDisplay.opacityRegions(payload.dimmer);
         }
-        else if (this.config.displayStyle !== "Text") {
-          this.screenDisplay.barAnimate(payload);
+        if (this.config.displayAvailability) {
+          let availability= document.getElementById("EXT-SCREEN_AVAILABILITY_DATA");
+          availability.textContent= `${payload.availability} (${payload.availabilityPercent}%)`;
         }
         break;
       case "SCREEN_PRESENCE":
@@ -134,12 +134,6 @@ Module.register("EXT-Screen", {
           });
         }
         break;
-      case "SCREEN_AVAILABILITY":
-        if (this.config.displayAvailability) {
-          let availability= document.getElementById("EXT-SCREEN_AVAILABILITY_DATA");
-          availability.textContent= `${payload.availability  } (${  payload.availabilityPercent  }%)`;
-        }
-        break;
       case "SCREEN_POWERSTATUS":
         this.sendNotification("EXT_SCREEN-POWER", payload);
         break;
@@ -161,9 +155,6 @@ Module.register("EXT-Screen", {
         break;
       case "FORCE_LOCK_END":
         this.screenDisplay.showEXT();
-        break;
-      case "SCREEN_DIMMER":
-        this.screenDisplay.opacityRegions(payload);
         break;
     }
   },

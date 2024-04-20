@@ -14,7 +14,6 @@ class SCREEN {
     this.sendSocketNotification = callbacks.sendSocketNotification;
     this.detector = callbacks.detector;
     this.governor = callbacks.governor;
-    if (this.config.debug) log = (...args) => { console.log("[SCREEN] [LIB]", ...args); };
     this.PathScript = `${path.dirname(require.resolve("../package.json"))}/scripts`;
     this.interval = null;
     this.default = {
@@ -32,6 +31,7 @@ class SCREEN {
       wrandrForceMode: null
     };
     this.config = Object.assign(this.default, this.config);
+    if (this.config.debug) log = (...args) => { console.log("[SCREEN] [LIB]", ...args); };
     this.screen = {
       mode: this.config.mode,
       running: false,
@@ -53,11 +53,19 @@ class SCREEN {
       wrandrRotation: null,
       wrandrForceMode: null,
       hdmiPort: null,
-      forceOnStart: true
+      forceOnStart: true,
+      dimmer: 1,
+      dimmerFrom: this.config.delay / 4,
+      output: {
+        timer: "--:--",
+        bar: 1,
+        dimmer: 1,
+        availabilityPercent: 100,
+        availability: 0
+      }
     };
 
     this.status = false;
-    this.dimmerFrom = this.config.delay / 4;
 
     this.xrandrRoation = [ "normal", "left", "right", "inverted" ];
     this.wrandrRoation = [ "normal", "90", "180", "270", "flipped", "flipped-90", "flipped-180", "flipped-270" ];
@@ -131,7 +139,6 @@ class SCREEN {
         if (seconds < 10) {seconds = `0${seconds}`;}
         return `${hours}:${minutes}:${seconds}`;
       };
-      this.screenAvailability();
     }
 
     this.screenStatus();
@@ -161,27 +168,36 @@ class SCREEN {
       this.screen.power = true;
     }
     if (this.config.autoDimmer) {
-      this.sendSocketNotification("SCREEN_DIMMER", 1);
+      this.screen.dimmer = 1;
     }
     clearInterval(this.interval);
     this.interval = null;
     this.counter = this.config.delay;
-    this.interval = setInterval( ()=> {
-      this.screen.running = true;
 
-      if (this.config.displayCounter) {
-        this.sendSocketNotification("SCREEN_TIMER", moment(new Date(this.counter)).format("mm:ss"));
-        if (this.config.dev) log("Counter:", moment(new Date(this.counter)).format("mm:ss"));
+    // main loop
+    this.interval = setInterval( ()=> {
+      if (this.config.displayAvailability) {
+        this.screen.uptime = Math.floor(process.uptime());
+        this.screen.availabilityPercent = (this.screen.availabilityCounter*100)/this.screen.uptime;
+        this.screen.availabilityTimeSec = this.screen.uptime > 86400 ? (this.screen.availabilityPercent * 864) : this.screen.availabilityCounter;
+        this.screen.availabilityTimeHuman = this.screen.availabilityTimeSec.toHHMMSS();
+        this.screen.output.availabilityPercent = parseFloat(this.screen.availabilityPercent.toFixed(1));
+        this.screen.output.availability = this.screen.availabilityTimeHuman;
       }
-      if (this.config.displayBar) {
-        this.sendSocketNotification("SCREEN_BAR", this.config.delay - this.counter );
+
+      this.screen.running = true;
+      if (this.config.autoDimmer && (this.counter <= this.screen.dimmerFrom)) {
+        this.screen.dimmer = (100 - (((this.screen.dimmerFrom - this.counter) * 100) / this.screen.dimmerFrom))/100;
       }
-      if (this.config.autoDimmer) {
-        if (this.counter <= this.dimmerFrom) {
-          let dimmer = (100 - (((this.dimmerFrom - this.counter) * 100) / this.dimmerFrom))/100;
-          this.sendSocketNotification("SCREEN_DIMMER", dimmer.toFixed(1));
-        }
-      }
+      let currentRemain = this.config.delay - this.counter;
+
+      this.screen.output.timer = moment(new Date(this.counter)).format("m:ss");
+      this.screen.output.bar = (100 - ((currentRemain * 100) / this.config.delay))/100;
+      this.screen.output.dimmer = this.screen.dimmer;
+
+      this.sendSocketNotification("SCREEN_OUTPUT", this.screen.output);
+      log("Output:", this.screen.output);
+
       if (this.counter <= 0) {
         clearInterval(this.interval);
         this.interval = null;
@@ -199,7 +215,7 @@ class SCREEN {
     this.screen.power = false;
     if (this.config.mode) this.wantedPowerDisplay(false);
     if (this.config.detectorSleeping) this.detector("DETECTOR_STOP");
-    if (this.config.autoDimmer) this.sendSocketNotification("SCREEN_DIMMER", 0);
+    this.screen.dimmer = 0;
     this.governor("GOVERNOR_SLEEPING");
     this.sendSocketNotification("SCREEN_PRESENCE", false);
   }
@@ -566,22 +582,6 @@ class SCREEN {
     });
   }
 
-  screenAvailability () {
-    console.log("[SCREEN] Availability started");
-    setInterval(() => {
-      this.screen.uptime = Math.floor(process.uptime());
-      if (this.screen.power) this.screen.availabilityCounter++;
-      this.screen.availabilityPercent = (this.screen.availabilityCounter*100)/this.screen.uptime;
-      this.screen.availabilityTimeSec = this.screen.uptime > 86400 ? (this.screen.availabilityPercent * 864) : this.screen.availabilityCounter;
-      this.screen.availabilityTimeHuman = this.screen.availabilityTimeSec.toHHMMSS();
-      let availability = {
-        availabilityPercent:parseFloat(this.screen.availabilityPercent.toFixed(1)),
-        availability: this.screen.availabilityTimeHuman
-      };
-      this.sendSocketNotification("SCREEN_AVAILABILITY", availability);
-    }, 1000);
-  }
-
   /** Cron Rules **/
   cronState (state) {
     this.screen.cronStarted= state.started;
@@ -641,6 +641,7 @@ class SCREEN {
 
   screenStatus () {
     setInterval(() => {
+      if (this.screen.power && this.config.displayAvailability) this.screen.availabilityCounter++;
       let status = this.screen.power;
       if (status !== this.status) {
         this.sendSocketNotification("SCREEN_POWERSTATUS", status);
