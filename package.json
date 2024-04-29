@@ -1,7 +1,7 @@
 {
   "name": "EXT-Screen",
-  "version": "2.5.3",
-  "rev": "240420",
+  "version": "2.5.4",
+  "rev": "240429",
   "description": "GA EXT Screen manager",
   "main": "EXT-Screen.js",
   "scripts": {
@@ -39,6 +39,7 @@
     "cron-parser": "^4.9.0",
     "esbuild": "^0.20.2",
     "glob": "^10.3.12",
+    "long-press-event": "^2.5.0",
     "node-cron": "^3.0.3"
   },
   "devDependencies": {
