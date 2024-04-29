@@ -221,7 +221,7 @@ Module.register("EXT-Screen", {
   getScripts () {
     return [
       "/modules/EXT-Screen/components/progressbar.js",
-      "/modules/MMM-Pir/node_modules/long-press-event/dist/long-press-event.min.js",
+      "/modules/EXT-Screen/node_modules/long-press-event/dist/long-press-event.min.js",
       "/modules/EXT-Screen/components/screenDisplayer.js",
       "/modules/EXT-Screen/components/screenTouch.js"
     ];
