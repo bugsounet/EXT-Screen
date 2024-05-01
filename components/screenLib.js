@@ -635,8 +635,8 @@ class SCREEN {
   }
 
   forceLockToggle () {
-    if (this.screen.power) this.forceLockOFF()
-    else this.forceLockON()
+    if (this.screen.power) this.forceLockOFF();
+    else this.forceLockON();
   }
 
   sendForceLockState (state) {
