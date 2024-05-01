@@ -207,6 +207,9 @@ Module.register("EXT-Screen", {
       case "EXT_SCREEN-FORCE_WAKEUP":
         this.sendSocketNotification("LOCK_FORCE_WAKEUP");
         break;
+      case "EXT_SCREEN-FORCE_TOGGLE":
+        this.sendSocketNotification("LOCK_FORCE_TOOGLE");
+        break;
     }
   },
 
