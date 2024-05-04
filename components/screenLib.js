@@ -148,8 +148,6 @@ class SCREEN {
     process.on("exit", (code) => {
       if (this.config.mode) this.setPowerDisplay(true);
       this.governor("GOVERNOR_WORKING");
-      console.log("[SCREEN] ByeBye!");
-      console.log("[SCREEN] @bugsounet");
     });
     this.start();
   }
