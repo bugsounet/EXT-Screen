@@ -38,6 +38,9 @@ module.exports = NodeHelper.create({
       case "LOCK_FORCE_WAKEUP":
         this.screen.forceLockON();
         break;
+      case "LOCK_FORCE_TOOGLE":
+        this.screen.forceLockToggle();
+        break;
     }
   },
 

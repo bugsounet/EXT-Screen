@@ -148,8 +148,6 @@ class SCREEN {
     process.on("exit", (code) => {
       if (this.config.mode) this.setPowerDisplay(true);
       this.governor("GOVERNOR_WORKING");
-      console.log("[SCREEN] ByeBye!");
-      console.log("[SCREEN] @bugsounet");
     });
     this.start();
   }
@@ -331,7 +329,7 @@ class SCREEN {
         exec("echo 'pow 0' | cec-client -s -d 1", (err, stdout, stderr)=> {
           if (err) {
             this.logError(err);
-            this.logError(`HDMI CEC Error: ${  stdout}`);
+            this.logError(`HDMI CEC Error: ${stdout}`);
             this.sendSocketNotification("ERROR", `[SCREEN] HDMI CEC command error (mode: ${this.config.mode})`);
           } else {
             let responseSh = stdout.trim();
@@ -346,7 +344,7 @@ class SCREEN {
       /** dmps linux **/
         exec("xset q | grep Monitor", (err, stdout, stderr)=> {
           if (err) {
-            this.logError(`[Display Error] ${  err}`);
+            this.logError(`[Display Error] ${err}`);
             this.sendSocketNotification("ERROR", `[SCREEN] dpms linux command error (mode: ${this.config.mode})`);
           }
           else {
@@ -361,7 +359,7 @@ class SCREEN {
       /** python script **/
         exec(`python monitor.py -s -g=${this.config.gpio}`, { cwd: this.PathScript }, (err, stdout, stderr)=> {
           if (err) {
-            this.logError(`[Display Error] ${  err}`);
+            this.logError(`[Display Error] ${err}`);
             this.sendSocketNotification("ERROR", `[SCREEN] python relay script error (mode: ${this.config.mode})`);
           }
           else {
@@ -376,7 +374,7 @@ class SCREEN {
       /** python script reverse**/
         exec(`python monitor.py -s -g=${this.config.gpio}`, { cwd: this.PathScript }, (err, stdout, stderr)=> {
           if (err) {
-            this.logError(`[Display Error] ${  err}`);
+            this.logError(`[Display Error] ${err}`);
             this.sendSocketNotification("ERROR", `[SCREEN] python relay script error (mode: ${this.config.mode})`);
           }
           else {
@@ -573,7 +571,7 @@ class SCREEN {
   }
 
   logError (err) {
-    console.error(`[SCREEN] ${  err}`);
+    console.error(`[SCREEN] ${err}`);
   }
 
   sleep (ms=1300) {
@@ -634,6 +632,11 @@ class SCREEN {
     log("[Force ON] Turn ON Display");
   }
 
+  forceLockToggle () {
+    if (this.screen.power) this.forceLockOFF();
+    else this.forceLockON();
+  }
+
   sendForceLockState (state) {
     this.screen.forceLocked = state;
     this.sendSocketNotification("SCREEN_FORCELOCKED", this.screen.forceLocked);
@@ -645,6 +648,7 @@ class SCREEN {
       let status = this.screen.power;
       if (status !== this.status) {
         this.sendSocketNotification("SCREEN_POWERSTATUS", status);
+        if (this.config.mode === 0) this.sendSocketNotification("SCREEN_POWER", this.screen.power);
         log("[POWER] Display from", this.status, "--->", status);
       }
       this.status = status;

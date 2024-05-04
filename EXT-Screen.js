@@ -207,6 +207,9 @@ Module.register("EXT-Screen", {
       case "EXT_SCREEN-FORCE_WAKEUP":
         this.sendSocketNotification("LOCK_FORCE_WAKEUP");
         break;
+      case "EXT_SCREEN-FORCE_TOGGLE":
+        this.sendSocketNotification("LOCK_FORCE_TOOGLE");
+        break;
     }
   },
 
@@ -221,7 +224,7 @@ Module.register("EXT-Screen", {
   getScripts () {
     return [
       "/modules/EXT-Screen/components/progressbar.js",
-      "/modules/EXT-Screen/components/long-press-event.js",
+      "/modules/EXT-Screen/node_modules/long-press-event/dist/long-press-event.min.js",
       "/modules/EXT-Screen/components/screenDisplayer.js",
       "/modules/EXT-Screen/components/screenTouch.js"
     ];
