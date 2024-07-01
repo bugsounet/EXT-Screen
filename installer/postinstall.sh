@@ -5,7 +5,6 @@
 
 rebuild=0
 minify=0
-bugsounet=0
 change=0
 
 while getopts ":rmb" option; do
@@ -14,8 +13,6 @@ while getopts ":rmb" option; do
        rebuild=1;;
     m) # -m option for minify all sources
        minify=1;;
-    b) # -b option display bugsounet credit
-       bugsounet=1;;
   esac
 done
 
@@ -52,7 +49,7 @@ cd ..
 
 if [[ $rebuild == 1 ]]; then
   Installer_info "Rebuild MagicMirror..."
-  MagicMirror-rebuild 2>/dev/null || {
+  electron-rebuild 1>/dev/null || {
     Installer_error "Rebuild Failed"
     exit 255
   }
@@ -263,10 +260,4 @@ echo
 # module name
 Installer_module="$(grep -Eo '\"name\"[^,]*' ./package.json | grep -Eo '[^:]*$' | awk  -F'\"' '{print $2}')"
 
-# the end...
-if [[ $bugsounet == 1 ]]; then
-  Installer_warning "Support is now moved in a dedicated Server: https://forum.bugsounet.fr"
-  Installer_warning "@bugsounet"
-  echo
-fi
 Installer_success "$Installer_module is now installed !"
