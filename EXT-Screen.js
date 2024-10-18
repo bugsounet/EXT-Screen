@@ -6,47 +6,16 @@
 var logScreen = (...args) => { /* do nothing */ };
 
 Module.register("EXT-Screen", {
-  requiresVersion: "2.25.0",
+  requiresVersion: "2.28.0",
   defaults: {
     debug: false,
-    animateBody: true,
-    autoDimmer: false,
-    delay: 2 * 60 * 1000,
-    mode: 1,
-    xrandrForceRotation: "normal",
-    wrandrForceRotation: "normal",
-    wrandrForceMode: null,
-    displayCounter: true,
-    displayBar: true,
-    displayStyle: "Text",
-    displayLastPresence: true,
-    lastPresenceTimeFormat: "LL H:mm",
-    displayAvailability: true,
-    detectorSleeping: false,
-    gpio: 20,
-    clearGpioValue: true,
-    sound: false,
-    touchMode: 3,
-    ON: [
-      //  {
-      //    dayOfWeek: [0],
-      //    hour: 7,
-      //    minute: 45
-      //  }
-    ],
-    OFF: [
-      //  {
-      //    dayOfWeek: [1],
-      //    hour: 17,
-      //    minute: 00
-      //  }
-    ]
+    detectorSleeping: false
   },
 
   start () {
     this.ignoreSender= [
       "MMM-GoogleAssistant",
-      "EXT-Pir",
+      "MMM-Pir",
       "EXT-Screen",
       "EXT-Motion",
       "EXT-Keyboard",
@@ -54,29 +23,7 @@ Module.register("EXT-Screen", {
     ];
 
     if (this.config.debug) logScreen = (...args) => { console.log("[SCREEN]", ...args); };
-    this.userPresence = null;
-    this.lastPresence = null;
     this.ready = false;
-    let Tools = {
-      sendSocketNotification: (...args) => this.sendSocketNotification(...args),
-      sendNotification: (...args) => this.sendNotification(...args),
-      hidden: () => { return this.hidden; },
-      translate: (...args) => this.translate(...args),
-      hide: (...args) => this.hide(...args),
-      show: (...args) => this.show(...args)
-    };
-    let displayConfig = {
-      animateBody: this.config.animateBody,
-      displayCounter: this.config.displayCounter,
-      displayBar: this.config.displayBar,
-      displayStyle: this.config.displayStyle,
-      displayLastPresence: this.config.displayLastPresence,
-      displayAvailability: this.config.displayAvailability,
-      delay: this.config.delay
-    };
-    this.screenDisplay = new screenDisplayer(displayConfig, Tools);
-    this.config.displayStyle = this.screenDisplay.checkStyle();
-    this.screenTouch = new screenTouch(this.config.touchMode, Tools);
     this.isForceLocked = false;
   },
 
@@ -84,9 +31,9 @@ Module.register("EXT-Screen", {
     switch(notification) {
       case "INITIALIZED":
         this.sendNotification("EXT_HELLO", this.name);
-        this.screenTouch.touch(this);
         this.ready = true;
         break;
+      /*
       case "SCREEN_SHOWING":
         this.screenDisplay.screenShowing();
         break;
@@ -156,15 +103,22 @@ Module.register("EXT-Screen", {
       case "FORCE_LOCK_END":
         this.screenDisplay.showEXT();
         break;
+      */
     }
   },
 
-  notificationReceived (notification, payload, sender) {
+  async notificationReceived (notification, payload, sender) {
     if (notification === "GA_READY") {
       if (sender.name === "MMM-GoogleAssistant") {
-        if (this.config.animateBody) this.screenDisplay.prepareBody();
-        this.screenDisplay.prepareBar();
-        this.sendSocketNotification("INIT", this.config);
+        try {
+          await this.scanPir();
+          this.sendSocketNotification("INIT", this.config);
+        } catch (e) {
+          this.sendNotification("EXT_ALERT", {
+            message: e,
+            type: "error"
+          });
+        }
       }
     }
     if (!this.ready) return;
@@ -213,23 +167,6 @@ Module.register("EXT-Screen", {
     }
   },
 
-  getDom () {
-    return this.screenDisplay.prepare();
-  },
-
-  getStyles () {
-    return [ "EXT-Screen.css" ];
-  },
-
-  getScripts () {
-    return [
-      "/modules/EXT-Screen/components/progressbar.js",
-      "/modules/EXT-Screen/node_modules/long-press-event/dist/long-press-event.min.js",
-      "/modules/EXT-Screen/components/screenDisplayer.js",
-      "/modules/EXT-Screen/components/screenTouch.js"
-    ];
-  },
-
   getTranslations () {
     return {
       en: "translations/en.json",
@@ -273,5 +210,13 @@ Module.register("EXT-Screen", {
   *on*: Power on the screen\n\
   *off*: Power off the screen\n\
   ",{ parse_mode:"Markdown" });
+  },
+  scanPir () {
+    return new Promise((resolve, reject) => {
+      var PIR = 0;
+      MM.getModules().withClass("MMM-Pir").enumerate((module) => { PIR++; });
+      if (!PIR) reject("You can't start EXT-Screen without MMM-Pir. Please install it");
+      else resolve(true);
+    })
   }
 });
