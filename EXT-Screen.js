@@ -34,38 +34,6 @@ Module.register("EXT-Screen", {
         this.ready = true;
         break;
       /*
-      case "SCREEN_SHOWING":
-        this.screenDisplay.screenShowing();
-        break;
-      case "SCREEN_HIDING":
-        this.screenDisplay.screenHiding();
-        break;
-      case "SCREEN_OUTPUT":
-        if (this.config.displayStyle === "Text") {
-          let counter = document.getElementById("EXT-SCREEN_SCREEN_COUNTER");
-          counter.textContent = payload.timer;
-        } else {
-          this.screenDisplay.barAnimate(payload.bar, payload.timer);
-        }
-        if (this.config.autoDimmer) {
-          this.screenDisplay.opacityRegions(payload.dimmer);
-        }
-        if (this.config.displayAvailability) {
-          let availability= document.getElementById("EXT-SCREEN_AVAILABILITY_DATA");
-          availability.textContent= `${payload.availability} (${payload.availabilityPercent}%)`;
-        }
-        break;
-      case "SCREEN_PRESENCE":
-        if (payload) this.lastPresence = moment().format(this.config.lastPresenceTimeFormat);
-        else this.userPresence = this.lastPresence;
-        if (this.userPresence && this.config.displayLastPresence) {
-          let presence= document.getElementById("EXT-SCREEN_PRESENCE");
-          presence.classList.remove("hidden");
-          presence.classList.add("bright");
-          let userPresence= document.getElementById("EXT-SCREEN_PRESENCE_DATE");
-          userPresence.textContent= this.userPresence;
-        }
-        break;
       case "SCREEN_POWER":
         if (payload) {
           this.sendNotification("EXT_ALERT", {
@@ -112,7 +80,7 @@ Module.register("EXT-Screen", {
       if (sender.name === "MMM-GoogleAssistant") {
         try {
           await this.scanPir();
-          this.sendSocketNotification("INIT", this.config);
+          this.sendSocketNotification("INIT");
         } catch (e) {
           this.sendNotification("EXT_ALERT", {
             message: e,
@@ -124,36 +92,44 @@ Module.register("EXT-Screen", {
     if (!this.ready) return;
     switch(notification) {
       case "EXT_SCREEN-END":
-        this.sendSocketNotification("FORCE_END");
+        this.sendNotification("MMM_PIR-END");
         break;
       case "EXT_SCREEN-WAKEUP":
-        this.sendSocketNotification("WAKEUP");
-        if (this.ignoreSender.indexOf(sender.name) === -1) {
-          this.sendNotification("EXT_ALERT", {
-            message: this.translate("ScreenWakeUp", { VALUES: sender.name }),
-            type: "information"
-          });
-        }
+        this.sendNotification("MMM_PIR-WAKEUP");
+
+        //if (this.ignoreSender.indexOf(sender.name) === -1) {
+        this.sendNotification("EXT_ALERT", {
+          message: this.translate("ScreenWakeUp", { VALUES: sender.name }),
+          type: "information"
+        });
+        //}
         break;
       case "EXT_SCREEN-LOCK":
-        this.sendSocketNotification("LOCK");
-        if (!this.isForceLocked) this.screenDisplay.hideEXT();
-        if (this.ignoreSender.indexOf(sender.name) === -1) {
-          this.sendNotification("EXT_ALERT", {
-            message: this.translate("ScreenLock", { VALUES: sender.name }),
-            type: "information"
-          });
-        }
+        this.sendNotification("MMM_PIR-LOCK");
+        MM.getModules().withClass("MMM-Pir").enumerate((module) => {
+          module.screenDisplay.hideMe();
+        });
+        //if (!this.isForceLocked) this.screenDisplay.hideEXT();
+        //if (this.ignoreSender.indexOf(sender.name) === -1) {
+        this.sendNotification("EXT_ALERT", {
+          message: this.translate("ScreenLock", { VALUES: sender.name }),
+          type: "information"
+        });
+
+        //}
         break;
       case "EXT_SCREEN-UNLOCK":
-        this.sendSocketNotification("UNLOCK");
-        if (!this.isForceLocked) this.screenDisplay.showEXT();
-        if (this.ignoreSender.indexOf(sender.name) === -1) {
-          this.sendNotification("EXT_ALERT", {
-            message: this.translate("ScreenUnLock", { VALUES: sender.name }),
-            type: "information"
-          });
-        }
+        this.sendNotification("MMM_PIR-UNLOCK");
+        MM.getModules().withClass("MMM-Pir").enumerate((module) => {
+          module.screenDisplay.showMe();
+        });
+        //if (!this.isForceLocked) this.screenDisplay.showEXT();
+        //if (this.ignoreSender.indexOf(sender.name) === -1) {
+        this.sendNotification("EXT_ALERT", {
+          message: this.translate("ScreenUnLock", { VALUES: sender.name }),
+          type: "information"
+        });
+        //}
         break;
       case "EXT_SCREEN-FORCE_END":
         this.sendSocketNotification("LOCK_FORCE_END");
@@ -163,6 +139,9 @@ Module.register("EXT-Screen", {
         break;
       case "EXT_SCREEN-FORCE_TOGGLE":
         this.sendSocketNotification("LOCK_FORCE_TOOGLE");
+        break;
+      case "MMM_PIR-SCREEN_POWERSTATUS":
+        this.sendNotification("EXT_SCREEN-POWER", payload);
         break;
     }
   },
@@ -183,6 +162,15 @@ Module.register("EXT-Screen", {
     };
   },
 
+  scanPir () {
+    return new Promise((resolve, reject) => {
+      var PIR = 0;
+      MM.getModules().withClass("MMM-Pir").enumerate((module) => { PIR++; });
+      if (!PIR) reject("You can't start EXT-Screen without MMM-Pir. Please install it");
+      else resolve(true);
+    });
+  },
+
   /** EXT-TelegramBot Commands **/
   EXT_TELBOTCommands (commander) {
     commander.add({
@@ -196,12 +184,12 @@ Module.register("EXT-Screen", {
       var args = handler.args.toLowerCase().split(" ");
       var params = handler.args.split(" ");
       if (args[0] === "on") {
-        this.sendSocketNotification("WAKEUP");
+        this.sendNotification("MMM_PIR-WAKEUP");
         handler.reply("TEXT", this.translate("ScreenPowerOn"));
         return;
       }
       if (args[0] === "off") {
-        this.sendSocketNotification("FORCE_END");
+        this.sendNotification("FORCE_END");
         handler.reply("TEXT", this.translate("ScreenPowerOff"));
         return;
       }
@@ -210,13 +198,5 @@ Module.register("EXT-Screen", {
   *on*: Power on the screen\n\
   *off*: Power off the screen\n\
   ",{ parse_mode:"Markdown" });
-  },
-  scanPir () {
-    return new Promise((resolve, reject) => {
-      var PIR = 0;
-      MM.getModules().withClass("MMM-Pir").enumerate((module) => { PIR++; });
-      if (!PIR) reject("You can't start EXT-Screen without MMM-Pir. Please install it");
-      else resolve(true);
-    })
   }
 });
