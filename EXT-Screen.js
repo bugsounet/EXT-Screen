@@ -33,45 +33,6 @@ Module.register("EXT-Screen", {
         this.sendNotification("EXT_HELLO", this.name);
         this.ready = true;
         break;
-      /*
-      case "SCREEN_POWER":
-        if (payload) {
-          this.sendNotification("EXT_ALERT", {
-            message: this.translate("ScreenPowerOn"),
-            type: "information",
-            sound: this.config.sound ? "modules/EXT-Screen/sounds/open.mp3" : null
-          });
-        } else {
-          this.sendNotification("EXT_ALERT", {
-            message: this.translate("ScreenPowerOff"),
-            type: "information",
-            sound: this.config.sound ? "modules/EXT-Screen/sounds/close.mp3" : null
-          });
-        }
-        break;
-      case "SCREEN_POWERSTATUS":
-        this.sendNotification("EXT_SCREEN-POWER", payload);
-        break;
-      case "GOVERNOR_SLEEPING":
-        this.sendNotification("EXT_GOVERNOR-SLEEPING");
-        break;
-      case "GOVERNOR_WORKING":
-        this.sendNotification("EXT_GOVERNOR-WORKING");
-        break;
-      case "DETECTOR_START":
-        this.sendNotification("EXT_DETECTOR-START");
-        break;
-      case "DETECTOR_STOP":
-        this.sendNotification("EXT_DETECTOR-STOP");
-        break;
-      case "SCREEN_FORCELOCKED":
-        this.screenDisplay.hideShowCounter(payload);
-        this.isForceLocked = payload ? true : false;
-        break;
-      case "FORCE_LOCK_END":
-        this.screenDisplay.showEXT();
-        break;
-      */
     }
   },
 
@@ -92,56 +53,78 @@ Module.register("EXT-Screen", {
     if (!this.ready) return;
     switch(notification) {
       case "EXT_SCREEN-END":
+        if (this.isForceLocked) return;
         this.sendNotification("MMM_PIR-END");
         break;
       case "EXT_SCREEN-WAKEUP":
+        if (this.isForceLocked) return;
         this.sendNotification("MMM_PIR-WAKEUP");
-
-        //if (this.ignoreSender.indexOf(sender.name) === -1) {
-        this.sendNotification("EXT_ALERT", {
-          message: this.translate("ScreenWakeUp", { VALUES: sender.name }),
-          type: "information"
-        });
-        //}
+        if (this.ignoreSender.indexOf(sender.name) === -1) {
+          this.sendNotification("EXT_ALERT", {
+            message: this.translate("ScreenWakeUp", { VALUES: sender.name }),
+            type: "information"
+          });
+        }
         break;
       case "EXT_SCREEN-LOCK":
+        if (this.isForceLocked) return;
         this.sendNotification("MMM_PIR-LOCK");
         MM.getModules().withClass("MMM-Pir").enumerate((module) => {
           module.screenDisplay.hideMe();
         });
-        //if (!this.isForceLocked) this.screenDisplay.hideEXT();
-        //if (this.ignoreSender.indexOf(sender.name) === -1) {
-        this.sendNotification("EXT_ALERT", {
-          message: this.translate("ScreenLock", { VALUES: sender.name }),
-          type: "information"
-        });
-
-        //}
+        if (this.ignoreSender.indexOf(sender.name) === -1) {
+          this.sendNotification("EXT_ALERT", {
+            message: this.translate("ScreenLock", { VALUES: sender.name }),
+            type: "information"
+          });
+        }
         break;
       case "EXT_SCREEN-UNLOCK":
+        if (this.isForceLocked) return;
         this.sendNotification("MMM_PIR-UNLOCK");
         MM.getModules().withClass("MMM-Pir").enumerate((module) => {
           module.screenDisplay.showMe();
         });
-        //if (!this.isForceLocked) this.screenDisplay.showEXT();
-        //if (this.ignoreSender.indexOf(sender.name) === -1) {
-        this.sendNotification("EXT_ALERT", {
-          message: this.translate("ScreenUnLock", { VALUES: sender.name }),
-          type: "information"
-        });
-        //}
-        break;
-      case "EXT_SCREEN-FORCE_END":
-        this.sendSocketNotification("LOCK_FORCE_END");
-        break;
-      case "EXT_SCREEN-FORCE_WAKEUP":
-        this.sendSocketNotification("LOCK_FORCE_WAKEUP");
-        break;
-      case "EXT_SCREEN-FORCE_TOGGLE":
-        this.sendSocketNotification("LOCK_FORCE_TOOGLE");
+        if (this.ignoreSender.indexOf(sender.name) === -1) {
+          this.sendNotification("EXT_ALERT", {
+            message: this.translate("ScreenUnLock", { VALUES: sender.name }),
+            type: "information"
+          });
+        }
         break;
       case "MMM_PIR-SCREEN_POWERSTATUS":
         this.sendNotification("EXT_SCREEN-POWER", payload);
+        if (payload) {
+          this.sendNotification("EXT_ALERT", {
+            message: this.translate("ScreenPowerOn"),
+            type: "information"
+          });
+          if (this.config.detectorSleeping) this.sendNotification("EXT_DETECTOR-START");
+        } else {
+          this.sendNotification("EXT_ALERT", {
+            message: this.translate("ScreenPowerOff"),
+            type: "information"
+          });
+          if (this.config.detectorSleeping) this.sendNotification("EXT_DETECTOR-STOP");
+        }
+        break;
+      case "EXT_SCREEN-FORCE_END":
+        this.isForceLocked = true;
+        MM.getModules().withClass("MMM-Pir").enumerate((module) => {
+          module.sendSocketNotification("LOCK_FORCE_END");
+        });
+        break;
+      case "EXT_SCREEN-FORCE_WAKEUP":
+        this.isForceLocked = false;
+        MM.getModules().withClass("MMM-Pir").enumerate((module) => {
+          module.sendSocketNotification("LOCK_FORCE_WAKEUP");
+        });
+        break;
+      case "EXT_SCREEN-FORCE_TOGGLE":
+        this.isForceLocked = !this.isForceLocked;
+        MM.getModules().withClass("MMM-Pir").enumerate((module) => {
+          module.sendSocketNotification("LOCK_FORCE_TOOGLE");
+        });
         break;
     }
   },
@@ -160,6 +143,12 @@ Module.register("EXT-Screen", {
       "zh-cn": "translations/zh-cn.json",
       tr: "translations/tr.json"
     };
+  },
+
+  getDom () {
+    var dom = document.createElement("div");
+    dom.style.display = "none";
+    return dom;
   },
 
   scanPir () {
