@@ -178,7 +178,7 @@ Module.register("EXT-Screen", {
         return;
       }
       if (args[0] === "off") {
-        this.sendNotification("FORCE_END");
+        this.sendNotification("MMM_PIR-END");
         handler.reply("TEXT", this.translate("ScreenPowerOff"));
         return;
       }
