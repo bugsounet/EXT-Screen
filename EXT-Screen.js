@@ -43,7 +43,7 @@ Module.register("EXT-Screen", {
           await this.scanPir();
           this.sendSocketNotification("INIT");
         } catch (e) {
-          this.sendNotification("EXT_ALERT", {
+          this.sendNotification("GA_ALERT", {
             message: e,
             type: "error"
           });
@@ -60,7 +60,7 @@ Module.register("EXT-Screen", {
         if (this.isForceLocked) return;
         this.sendNotification("MMM_PIR-WAKEUP");
         if (this.ignoreSender.indexOf(sender.name) === -1) {
-          this.sendNotification("EXT_ALERT", {
+          this.sendNotification("GA_ALERT", {
             message: this.translate("ScreenWakeUp", { VALUES: sender.name }),
             type: "information"
           });
@@ -73,7 +73,7 @@ Module.register("EXT-Screen", {
           module.screenDisplay.hideMe();
         });
         if (this.ignoreSender.indexOf(sender.name) === -1) {
-          this.sendNotification("EXT_ALERT", {
+          this.sendNotification("GA_ALERT", {
             message: this.translate("ScreenLock", { VALUES: sender.name }),
             type: "information"
           });
@@ -86,7 +86,7 @@ Module.register("EXT-Screen", {
           module.screenDisplay.showMe();
         });
         if (this.ignoreSender.indexOf(sender.name) === -1) {
-          this.sendNotification("EXT_ALERT", {
+          this.sendNotification("GA_ALERT", {
             message: this.translate("ScreenUnLock", { VALUES: sender.name }),
             type: "information"
           });
@@ -95,13 +95,13 @@ Module.register("EXT-Screen", {
       case "MMM_PIR-SCREEN_POWERSTATUS":
         this.sendNotification("EXT_SCREEN-POWER", payload);
         if (payload) {
-          this.sendNotification("EXT_ALERT", {
+          this.sendNotification("GA_ALERT", {
             message: this.translate("ScreenPowerOn"),
             type: "information"
           });
           if (this.config.detectorSleeping) this.sendNotification("EXT_DETECTOR-START");
         } else {
-          this.sendNotification("EXT_ALERT", {
+          this.sendNotification("GA_ALERT", {
             message: this.translate("ScreenPowerOff"),
             type: "information"
           });
