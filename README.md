@@ -2,10 +2,7 @@
 
 After a configurated time without any user interaction the display will turn off and hide all modules for economy mode.
 
-You can use others EXT modules to control it:
- * with PIR Sensor (`EXT-Pir`)
- * with Touch (`EXT-ScreenTouch`)
- * with crontab (`EXT-ScreenManager`)
+This plugin need [MMM-Pir](https://github.com/bugsounet/MMM-Pir) for working with MMM-GoogleAssistant rules
 
 ## Screenshot
 ![](https://raw.githubusercontent.com/bugsounet/EXT-Screen/dev/screenshot/screenshot.png)
