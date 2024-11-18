@@ -6,8 +6,8 @@
 const NodeHelper = require("node_helper");
 
 module.exports = NodeHelper.create({
-  socketNotificationReceived (notification, payload) {
-    switch(notification) {
+  socketNotificationReceived (notification) {
+    switch (notification) {
       case "INIT":
         this.initialize();
         break;

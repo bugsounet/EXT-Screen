@@ -3,17 +3,14 @@
 *  Bugsounet  *
 **************/
 
-var logScreen = (...args) => { /* do nothing */ };
-
 Module.register("EXT-Screen", {
   requiresVersion: "2.28.0",
   defaults: {
-    debug: false,
     detectorSleeping: false
   },
 
   start () {
-    this.ignoreSender= [
+    this.ignoreSender = [
       "MMM-GoogleAssistant",
       "MMM-Pir",
       "EXT-Screen",
@@ -22,13 +19,12 @@ Module.register("EXT-Screen", {
       "EXT-StreamDeck"
     ];
 
-    if (this.config.debug) logScreen = (...args) => { console.log("[SCREEN]", ...args); };
     this.ready = false;
     this.isForceLocked = false;
   },
 
-  socketNotificationReceived (notification, payload) {
-    switch(notification) {
+  socketNotificationReceived (notification) {
+    switch (notification) {
       case "INITIALIZED":
         this.sendNotification("EXT_HELLO", this.name);
         this.ready = true;
@@ -51,7 +47,7 @@ Module.register("EXT-Screen", {
       }
     }
     if (!this.ready) return;
-    switch(notification) {
+    switch (notification) {
       case "EXT_SCREEN-END":
         if (this.isForceLocked) return;
         this.sendNotification("MMM_PIR-END");
@@ -154,7 +150,7 @@ Module.register("EXT-Screen", {
   scanPir () {
     return new Promise((resolve, reject) => {
       var PIR = 0;
-      MM.getModules().withClass("MMM-Pir").enumerate((module) => { PIR++; });
+      MM.getModules().withClass("MMM-Pir").enumerate(() => { PIR++; });
       if (!PIR) reject("You can't start EXT-Screen without MMM-Pir. Please install it");
       else resolve(true);
     });
@@ -171,7 +167,6 @@ Module.register("EXT-Screen", {
   tbScreen (command, handler) {
     if (handler.args) {
       var args = handler.args.toLowerCase().split(" ");
-      var params = handler.args.split(" ");
       if (args[0] === "on") {
         this.sendNotification("MMM_PIR-WAKEUP");
         handler.reply("TEXT", this.translate("ScreenPowerOn"));
@@ -186,6 +181,6 @@ Module.register("EXT-Screen", {
     handler.reply("TEXT", "Need Help for /screen commands ?\n\n\
   *on*: Power on the screen\n\
   *off*: Power off the screen\n\
-  ",{ parse_mode:"Markdown" });
+  ", { parse_mode: "Markdown" });
   }
 });
